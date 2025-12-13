@@ -256,8 +256,8 @@ var APP_DATA = {
       ],
       "infoHotspots": [
         {
-          "yaw": -0.1328200078509898,
-          "pitch": -0.2547877309355133,
+          "yaw": -0.13935915795326181,
+          "pitch": -0.40571151300332176,
           "title": "The Boy Jesus at the Temple",
           "text": "Every year Jesus’ parents went to Jerusalem for the Festival of the Passover. When he was twelve years old, they went up to the festival, according to the custom. After the festival was over, while his parents were returning home, the boy Jesus stayed behind in Jerusalem, but they were unaware of it. Thinking he was in their company, they traveled on for a day. Then they began looking for him among their relatives and friends. When they did not find him, they went back to Jerusalem to look for him. After three days they found him in the temple courts, sitting among the teachers, listening to them and asking them questions. Everyone who heard him was amazed at his understanding and his answers. When his parents saw him, they were astonished. His mother said to him, “Son, why have you treated us like this? Your father and I have been anxiously searching for you.”<div><br></div><div>“Why were you searching for me?” he asked. “Didn’t you know I had to be in my Father’s house?” But they did not understand what he was saying to them. (Luke 2:41-50)</div>"
         }
