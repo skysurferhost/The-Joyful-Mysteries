@@ -83,8 +83,8 @@ var APP_DATA = {
       },
       "linkHotspots": [
         {
-          "yaw": 0.15620710652902403,
-          "pitch": -0.45384272732273523,
+          "yaw": 0.1177395626945632,
+          "pitch": -0.45286279075898506,
           "rotation": 0,
           "target": "2-3-the-nativity"
         },
@@ -152,8 +152,8 @@ var APP_DATA = {
       ],
       "infoHotspots": [
         {
-          "yaw": -0.19314999648023878,
-          "pitch": -0.4273958178345598,
+          "yaw": -0.15889849076410734,
+          "pitch": -0.4315377803768392,
           "title": "The Birth of Jesus",
           "text": "In those days Caesar Augustus issued a decree that a census should be taken of the entire Roman world. (This was the first census that took place while Quirinius was governor of Syria.) And everyone went to their own town to register.<div><br></div><div>So Joseph also went up from the town of Nazareth in Galilee to Judea, to Bethlehem the town of David, because he belonged to the house and line of David. He went there to register with Mary, who was pledged to be married to him and was expecting a child. While they were there, the time came for the baby to be born, and she gave birth to her firstborn, a son. She wrapped him in cloths and placed him in a manger, because there was no guest room available for them.</div><div><br></div><div>And there were shepherds living out in the fields nearby, keeping watch over their flocks at night. An angel of the Lord appeared to them, and the glory of the Lord shone around them, and they were terrified. But the angel said to them, “Do not be afraid. I bring you good news that will cause great joy for all the people. Today in the town of David a Savior has been born to you; he is the Messiah, the Lord. This will be a sign to you: You will find a baby wrapped in cloths and lying in a manger.”</div><div><br></div><div>Suddenly a great company of the heavenly host appeared with the angel, praising God and saying,</div><div><br></div><div>“Glory to God in the highest heaven, and on earth peace to those on whom his favor rests.”</div><div><br></div><div>When the angels had left them and gone into heaven, the shepherds said to one another, “Let’s go to Bethlehem and see this thing that has happened, which the Lord has told us about.”</div><div><br></div><div>So they hurried off and found Mary and Joseph, and the baby, who was lying in the manger. When they had seen him, they spread the word concerning what had been told them about this child, and all who heard it were amazed at what the shepherds said to them. But Mary treasured up all these things and pondered them in her heart. The shepherds returned, glorifying and praising God for all the things they had heard and seen, which were just as they had been told. (Luke 2:1-20)</div>"
         }
@@ -207,8 +207,8 @@ var APP_DATA = {
       ],
       "infoHotspots": [
         {
-          "yaw": -0.016036823100835207,
-          "pitch": -0.5146174780247925,
+          "yaw": 0.010598624790823408,
+          "pitch": -0.5165185590298762,
           "title": "Jesus Presented in the Temple",
           "text": "When the time came for the purification rites required by the Law of Moses, Joseph and Mary took him to Jerusalem to present him to the Lord (as it is written in the Law of the Lord, “Every firstborn male is to be consecrated to the Lord”), and to offer a sacrifice in keeping with what is said in the Law of the Lord: “a pair of doves or two young pigeons.”<div><br></div><div>Now there was a man in Jerusalem called Simeon, who was righteous and devout. He was waiting for the consolation of Israel, and the Holy Spirit was on him. It had been revealed to him by the Holy Spirit that he would not die before he had seen the Lord’s Messiah. Moved by the Spirit, he went into the temple courts. When the parents brought in the child Jesus to do for him what the custom of the Law required, Simeon took him in his arms and praised God, saying:</div><div><br></div><div>“Sovereign Lord, as you have promised, you may now dismiss your servant in peace.For my eyes have seen your salvation, which you have prepared in the sight of all nations: a light for revelation to the Gentiles, and the glory of your people Israel.”</div><div><br></div><div>The child’s father and mother marveled at what was said about him. Then Simeon blessed them and said to Mary, his mother: “This child is destined to cause the falling and rising of many in Israel, and to be a sign that will be spoken against, so that the thoughts of many hearts will be revealed. And a sword will pierce your own soul too.”</div><div><br></div><div>There was also a prophet, Anna, the daughter of Penuel, of the tribe of Asher. She was very old; she had lived with her husband seven years after her marriage, and then was a widow until she was eighty-four. She never left the temple but worshiped night and day, fasting and praying. Coming up to them at that very moment, she gave thanks to God and spoke about the child to all who were looking forward to the redemption of Jerusalem.&nbsp;</div><div>(Luke 2:22-38)</div>"
         }
