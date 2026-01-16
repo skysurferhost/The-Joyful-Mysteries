@@ -42,8 +42,8 @@ var APP_DATA = {
       ],
       "infoHotspots": [
         {
-          "yaw": 1.1622634055138068,
-          "pitch": -0.28166625856094996,
+          "yaw": 1.160054435162591,
+          "pitch": -0.28169234161257073,
           "title": "The Birth of Jesus Foretold",
           "text": "In the sixth month of Elizabeth’s pregnancy, God sent the angel Gabriel to Nazareth, a town in Galilee, to a virgin pledged to be married to a man named Joseph, a descendant of David. The virgin’s name was Mary. The angel went to her and said, “Greetings, you who are highly favored! The Lord is with you.”<div><br></div><div>Mary was greatly troubled at his words and wondered what kind of greeting this might be. But the angel said to her, “Do not be afraid, Mary; you have found favor with God. You will conceive and give birth to a son, and you are to call him Jesus. He will be great and will be called the Son of the Most High. The Lord God will give him the throne of his father David, and he will reign Jacob’s descendants forever; his kingdom will never end.”</div><div><br></div><div>“How will this be,” Mary asked the angel, “since I am a virgin?”</div><div><br></div><div>The angel answered, “The Holy Spirit will come on you, and the power of the Most High will overshadow you. So the holy one to be born will be called the Son of God. Even Elizabeth your relative is going to have a child in her old age, and she who was said to be unable to conceive is in her sixth month. For no word from God will ever fail.”</div><div><br></div><div>“I am the Lord’s servant,” Mary answered. “May your word to me be fulfilled.” Then the angel left her.</div><div>(Luke 1:26-38)</div>"
         }
