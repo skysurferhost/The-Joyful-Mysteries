@@ -110,30 +110,32 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  /* ===== TIMELINE ===== */
+  /* ===== TIMELINE (shorter + semi-transparent + gray border) ===== */
   .timeline {
-    flex: 1;
-    height: 6px;
-    background: #333;
-    border-radius: 4px;
+    width: 230px;                    /* ✅ shorter timeline */
+    height: 8px;
+    background: rgba(255,255,255,0.12); /* ✅ transparent look */
+    border: 1px solid rgba(255,255,255,0.28); /* ✅ gray border */
+    border-radius: 999px;
     cursor: pointer;
     position: relative;
+    overflow: hidden;
   }
 
   .timeline-progress {
     height: 100%;
     width: 0%;
-    background: #fff;
-    border-radius: 4px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 999px;
     pointer-events: none;
   }
 
   .marker {
     position: absolute;
-    top: -4px;
+    top: -5px;
     width: 2px;
-    height: 14px;
-    background: rgba(255,255,255,0.4);
+    height: 18px;
+    background: rgba(255,255,255,0.35);
   }
 
   /* ===== CONTROLS ROW ===== */
@@ -142,19 +144,21 @@
     align-items: center;
     gap: 12px;
     margin-top: 14px;
+    justify-content: center;
   }
 
   .btn {
-width: 34px;
+    width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: #fff; /* fully opaque */
+    background: #fff;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
+    flex: 0 0 auto;
   }
 
   .play-icon {
@@ -177,19 +181,19 @@ width: 34px;
     background: #000;
   }
 
-  /* ===== VOLUME ===== */
+  /* ===== VOLUME (no layout shift) ===== */
   .volume-container {
-    position: relative; /* for slider positioning */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    position: relative;              /* anchor for absolute slider */
+    width: 34px;                     /* ✅ fixed width so row never changes */
+    height: 34px;
+    flex: 0 0 auto;
   }
 
   .volume-btn {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: #fff; /* fully opaque */
+    background: #fff;
     border: none;
     cursor: pointer;
     display: flex;
@@ -204,16 +208,24 @@ width: 34px;
     fill: #000;
   }
 
+  /* Slider overlays (absolute) so it won't push spacing */
   .volume-slider {
-    width: 90px;
-    margin-top: 6px;
-    display: none; /* hidden by default */
+    position: absolute;
+    right: 0;
+    top: 42px;                       /* ✅ appears below button */
+    width: 110px;
+    display: none;
+    z-index: 999;
+  }
+
+  .volume-container.open .volume-slider {
+    display: block;
   }
 
   .volume-slider::-webkit-slider-runnable-track {
     height: 4px;
-    background: #fff;
-    border-radius: 4px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 999px;
   }
 
   .volume-slider::-webkit-slider-thumb {
@@ -228,8 +240,8 @@ width: 34px;
 
   .volume-slider::-moz-range-track {
     height: 4px;
-    background: #fff;
-    border-radius: 4px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 999px;
   }
 
   .volume-slider::-moz-range-thumb {
@@ -240,9 +252,9 @@ width: 34px;
     cursor: pointer;
   }
 
-  /* Show slider when parent has "open" class */
-  .volume-container.open .volume-slider {
-    display: block;
+  /* Optional: slightly shorter timeline on small phones */
+  @media (max-width: 420px) {
+    .timeline { width: 190px; }
   }
 </style>
 </head>
@@ -250,7 +262,6 @@ width: 34px;
 <body>
 
 <div class="player">
-
   <div class="controls">
     <!-- PLAY / PAUSE -->
     <button class="btn" onclick="playPause()">
@@ -276,7 +287,6 @@ width: 34px;
         oninput="setVolume(this.value)">
     </div>
   </div>
-
 </div>
 
 <audio id="audio" preload="auto"></audio>
@@ -296,7 +306,6 @@ width: 34px;
   const progress = document.getElementById("progress");
   const volIcon = document.getElementById("volIcon");
   const volumeContainer = document.getElementById("volumeContainer");
-  const volumeSlider = document.querySelector(".volume-slider");
 
   let durations = [], offsets = [], totalDuration = 0;
   let currentIndex = 0;
@@ -401,5 +410,3 @@ width: 34px;
 
 </body>
 </html>
-
-
