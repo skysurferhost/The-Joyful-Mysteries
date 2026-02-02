@@ -828,3 +828,39 @@ body.view-control-buttons .viewControlButton {
 .viewControlButton-6 {
   margin-left: 105px;
 }
+
+/* -------- Volume Control -------- */
+
+#volumeToggle {
+  position: absolute;
+  top: 0;
+  right: 80px;
+  width: 40px;
+  height: 40px;
+  padding: 5px;
+  background-color: rgba(103,115,131,0.8);
+}
+
+#volumeToggle .icon {
+  width: 30px;
+  height: 30px;
+}
+
+#volumeContainer {
+  position: absolute;
+  top: 45px;
+  right: 85px;
+  background: rgba(0,0,0,0.8);
+  padding: 8px;
+  border-radius: 6px;
+  display: none;
+}
+
+#volumeContainer.visible {
+  display: block;
+}
+
+#volumeSlider {
+  width: 100px;
+}
+
