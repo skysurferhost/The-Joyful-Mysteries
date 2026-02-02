@@ -110,12 +110,12 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  /* ===== TIMELINE (shorter + semi-transparent + gray border) ===== */
+  /* ===== TIMELINE ===== */
   .timeline {
-    width: 230px;                    /* ✅ shorter timeline */
+    width: 230px;
     height: 8px;
-    background: rgba(255,255,255,0.12); /* ✅ transparent look */
-    border: 1px solid rgba(255,255,255,0.28); /* ✅ gray border */
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.28);
     border-radius: 999px;
     cursor: pointer;
     position: relative;
@@ -142,29 +142,39 @@
   .controls {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     margin-top: 14px;
-    justify-content: center;
   }
 
-  .btn {
+  /* ===== PLAY & VOLUME BUTTONS (TRANSLUCENT) ===== */
+  .btn,
+  .volume-btn {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: #fff;
-    border: none;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(4px);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
+    transition: background 0.2s ease, border-color 0.2s ease;
     flex: 0 0 auto;
+  }
+
+  .btn:hover,
+  .volume-btn:hover {
+    background: rgba(255,255,255,0.32);
+    border-color: rgba(255,255,255,0.55);
   }
 
   .play-icon {
     width: 0;
     height: 0;
-    border-left: 14px solid #000;
+    border-left: 14px solid rgba(0,0,0,0.9);
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
     margin-left: 2px;
@@ -178,41 +188,27 @@
   .pause-icon span {
     width: 5px;
     height: 16px;
-    background: #000;
+    background: rgba(0,0,0,0.9);
   }
 
-  /* ===== VOLUME (no layout shift) ===== */
+  /* ===== VOLUME ===== */
   .volume-container {
-    position: relative;              /* anchor for absolute slider */
-    width: 34px;                     /* ✅ fixed width so row never changes */
-    height: 34px;
-    flex: 0 0 auto;
-  }
-
-  .volume-btn {
+    position: relative;
     width: 34px;
     height: 34px;
-    border-radius: 50%;
-    background: #fff;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
+    flex: 0 0 auto;
   }
 
   .volume-btn svg {
     width: 18px;
     height: 18px;
-    fill: #000;
+    fill: rgba(0,0,0,0.9);
   }
 
-  /* Slider overlays (absolute) so it won't push spacing */
   .volume-slider {
     position: absolute;
     right: 0;
-    top: 42px;                       /* ✅ appears below button */
+    top: 42px;
     width: 110px;
     display: none;
     z-index: 999;
@@ -252,7 +248,6 @@
     cursor: pointer;
   }
 
-  /* Optional: slightly shorter timeline on small phones */
   @media (max-width: 420px) {
     .timeline { width: 190px; }
   }
@@ -263,7 +258,8 @@
 
 <div class="player">
   <div class="controls">
-    <!-- PLAY / PAUSE -->
+
+    <!-- PLAY -->
     <button class="btn" onclick="playPause()">
       <div class="play-icon" id="playIcon"></div>
     </button>
@@ -283,9 +279,11 @@
         </svg>
       </button>
 
-      <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="1"
+      <input type="range" class="volume-slider"
+        min="0" max="1" step="0.01" value="1"
         oninput="setVolume(this.value)">
     </div>
+
   </div>
 </div>
 
