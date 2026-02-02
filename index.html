@@ -87,7 +87,7 @@
 </html>
 
 
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -148,7 +148,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #fff;
+    background: #fff; /* fully opaque */
     border: none;
     cursor: pointer;
     display: flex;
@@ -179,21 +179,23 @@
 
   /* ===== VOLUME ===== */
   .volume-container {
+    position: relative; /* for slider positioning */
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
   }
 
   .volume-btn {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #fff;
+    background: #fff; /* fully opaque */
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 2;
   }
 
   .volume-btn svg {
@@ -204,6 +206,8 @@
 
   .volume-slider {
     width: 90px;
+    margin-top: 6px;
+    display: none; /* hidden by default */
   }
 
   .volume-slider::-webkit-slider-runnable-track {
@@ -221,6 +225,25 @@
     margin-top: -4px;
     cursor: pointer;
   }
+
+  .volume-slider::-moz-range-track {
+    height: 4px;
+    background: #fff;
+    border-radius: 4px;
+  }
+
+  .volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: #000;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  /* Show slider when parent has "open" class */
+  .volume-container.open .volume-slider {
+    display: block;
+  }
 </style>
 </head>
 
@@ -229,19 +252,19 @@
 <div class="player">
 
   <div class="controls">
-    <!-- PLAY / PAUSE (LEFT) -->
+    <!-- PLAY / PAUSE -->
     <button class="btn" onclick="playPause()">
       <div class="play-icon" id="playIcon"></div>
     </button>
 
-    <!-- TIMELINE (CENTER) -->
+    <!-- TIMELINE -->
     <div class="timeline" id="timeline">
       <div class="timeline-progress" id="progress"></div>
     </div>
 
-    <!-- VOLUME (RIGHT) -->
-    <div class="volume-container">
-      <button class="volume-btn">
+    <!-- VOLUME -->
+    <div class="volume-container" id="volumeContainer">
+      <button class="volume-btn" onclick="toggleVolume(event)">
         <svg id="volIcon" viewBox="0 0 24 24">
           <path d="M3 9v6h4l5 5V4L7 9H3z"></path>
           <path id="wave1" d="M14.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"></path>
@@ -272,6 +295,8 @@
   const timeline = document.getElementById("timeline");
   const progress = document.getElementById("progress");
   const volIcon = document.getElementById("volIcon");
+  const volumeContainer = document.getElementById("volumeContainer");
+  const volumeSlider = document.querySelector(".volume-slider");
 
   let durations = [], offsets = [], totalDuration = 0;
   let currentIndex = 0;
@@ -346,7 +371,6 @@
     dragging = true;
     handleSeek(e.clientX);
   });
-
   window.addEventListener("mousemove", e => dragging && handleSeek(e.clientX));
   window.addEventListener("mouseup", () => dragging = false);
 
@@ -354,7 +378,6 @@
     dragging = true;
     handleSeek(e.touches[0].clientX);
   }, { passive: true });
-
   timeline.addEventListener("touchmove", e => dragging && handleSeek(e.touches[0].clientX), { passive: true });
   window.addEventListener("touchend", () => dragging = false);
 
@@ -363,10 +386,20 @@
     volIcon.querySelector("#wave2").style.display = v < 0.4 ? "none" : "";
     volIcon.querySelector("#wave1").style.display = v < 0.2 ? "none" : "";
   }
+
+  function toggleVolume(e) {
+    e.stopPropagation();
+    volumeContainer.classList.toggle("open");
+  }
+
+  document.addEventListener("click", e => {
+    if (!volumeContainer.contains(e.target)) {
+      volumeContainer.classList.remove("open");
+    }
+  });
 </script>
 
 </body>
 </html>
-
 
 
