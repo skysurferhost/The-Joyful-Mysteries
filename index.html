@@ -410,8 +410,7 @@
     drawMarkers();
     loadTrack(0);
 
-    audio.play().catch(() => {
-      document.addEventListener("click", () => audio.play(), { once: true });
+    setPlayIcon(); // ✅ ensure triangle icon on load
     });
   });
 
