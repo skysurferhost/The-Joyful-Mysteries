@@ -121,16 +121,7 @@
     border: 1px solid rgba(255,255,255,0.18);
     box-shadow: 0 10px 30px rgba(0,0,0,0.35);
     backdrop-filter: blur(6px);
-
     transform-origin: top right;
-    transition: transform 160ms ease, opacity 160ms ease, visibility 160ms ease;
-  }
-
-  .player.collapsed .player-panel {
-    opacity: 0;
-    visibility: hidden;
-    transform: scale(0.92);
-    pointer-events: none;
   }
 
   .controls {
@@ -138,6 +129,16 @@
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
+  }
+
+  /* ✅ NEW: only hide/show these controls, not the Audio handle */
+  .player.controls-hidden .controls-main {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    width: 0;
+    margin: 0;
+    padding: 0;
   }
 
   /* Timeline */
@@ -270,17 +271,15 @@
     cursor: pointer;
   }
 
-  /* Handle moved inline to the right */
+  /* Handle */
   .player-handle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-
     height: 34px;
     padding: 0 10px;
     border-radius: 999px;
-
     background: rgba(0,0,0,0.35);
     border: 1px solid rgba(255,255,255,0.18);
     backdrop-filter: blur(6px);
@@ -328,29 +327,32 @@
   <div class="player-panel" id="playerPanel">
     <div class="controls">
 
-      <button class="btn" onclick="playPause()">
-        <div class="play-icon" id="playIcon"></div>
-      </button>
-
-      <div class="timeline" id="timeline">
-        <div class="timeline-progress" id="progress"></div>
-      </div>
-
-      <div class="volume-container" id="volumeContainer">
-        <button class="volume-btn" onclick="toggleVolume(event)">
-          <svg id="volIcon" viewBox="0 0 24 24">
-            <path d="M3 9v6h4l5 5V4L7 9H3z"></path>
-            <path id="wave1" d="M14.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"></path>
-            <path id="wave2" d="M16.5 12c0 2.5-1.46 4.67-3.5 5.77v-2.06c1.44-.93 2.5-2.61 2.5-4.71s-1.06-3.78-2.5-4.71V6.23c2.04 1.1 3.5 3.27 3.5 5.77z"></path>
-          </svg>
+      <!-- ✅ Controls that hide/show -->
+      <div class="controls-main" id="controlsMain" style="display:flex; align-items:center; gap:10px;">
+        <button class="btn" onclick="playPause(); event.stopPropagation();">
+          <div class="play-icon" id="playIcon"></div>
         </button>
 
-        <input type="range" class="volume-slider"
-          min="0" max="1" step="0.01" value="1"
-          oninput="setVolume(this.value)">
+        <div class="timeline" id="timeline">
+          <div class="timeline-progress" id="progress"></div>
+        </div>
+
+        <div class="volume-container" id="volumeContainer">
+          <button class="volume-btn" onclick="toggleVolume(event)">
+            <svg id="volIcon" viewBox="0 0 24 24">
+              <path d="M3 9v6h4l5 5V4L7 9H3z"></path>
+              <path id="wave1" d="M14.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"></path>
+              <path id="wave2" d="M16.5 12c0 2.5-1.46 4.67-3.5 5.77v-2.06c1.44-.93 2.5-2.61 2.5-4.71s-1.06-3.78-2.5-4.71V6.23c2.04 1.1 3.5 3.27 3.5 5.77z"></path>
+            </svg>
+          </button>
+
+          <input type="range" class="volume-slider"
+            min="0" max="1" step="0.01" value="1"
+            oninput="setVolume(this.value)">
+        </div>
       </div>
 
-      <!-- ✅ HANDLE ON RIGHT SIDE -->
+      <!-- ✅ Audio handle ALWAYS stays visible -->
       <div class="player-handle" id="playerHandle" aria-label="Toggle audio controls">
         <span class="dot"></span><span class="dot"></span><span class="dot"></span>
         <span class="label">Audio</span>
@@ -379,10 +381,24 @@
   const volumeContainer = document.getElementById("volumeContainer");
   const player = document.getElementById("player");
   const playerHandle = document.getElementById("playerHandle");
+  const controlsMain = document.getElementById("controlsMain");
 
   let durations = [], offsets = [], totalDuration = 0;
   let currentIndex = 0;
   let dragging = false;
+
+  // ✅ Hide controls helper (keeps handle visible)
+  function hideControls() {
+    player.classList.add("controls-hidden");
+    volumeContainer.classList.remove("open");
+  }
+  function showControls() {
+    player.classList.remove("controls-hidden");
+  }
+  function toggleControls() {
+    const hidden = player.classList.contains("controls-hidden");
+    hidden ? showControls() : hideControls();
+  }
 
   Promise.all(tracks.map(t => new Promise(res => {
     const a = new Audio(t.src);
@@ -393,6 +409,7 @@
     totalDuration = times.reduce((a, b) => a + b, 0);
     drawMarkers();
     loadTrack(0);
+
     audio.play().catch(() => {
       document.addEventListener("click", () => audio.play(), { once: true });
     });
@@ -450,6 +467,7 @@
   }
 
   timeline.addEventListener("mousedown", e => {
+    e.stopPropagation();
     dragging = true;
     handleSeek(e.clientX);
   });
@@ -457,6 +475,7 @@
   window.addEventListener("mouseup", () => dragging = false);
 
   timeline.addEventListener("touchstart", e => {
+    e.stopPropagation();
     dragging = true;
     handleSeek(e.touches[0].clientX);
   }, { passive: true });
@@ -474,18 +493,20 @@
     volumeContainer.classList.toggle("open");
   }
 
-  // Toggle panel via handle
+  // ✅ Clicking the "••• Audio" only toggles main controls (handle remains)
   playerHandle.addEventListener("click", (e) => {
     e.stopPropagation();
-    player.classList.toggle("collapsed");
-    volumeContainer.classList.remove("open");
+    toggleControls();
   });
 
-  // Click outside closes slider only
-  document.addEventListener("click", (e) => {
-    if (!volumeContainer.contains(e.target)) {
-      volumeContainer.classList.remove("open");
-    }
+  // ✅ Clicking anywhere on screen hides main controls (handle stays)
+  document.addEventListener("click", () => {
+    hideControls();
+  });
+
+  // ✅ Clicking inside controls should NOT trigger document click-hide
+  controlsMain.addEventListener("click", (e) => {
+    e.stopPropagation();
   });
 </script>
 
