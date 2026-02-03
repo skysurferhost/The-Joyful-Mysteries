@@ -131,7 +131,7 @@
     gap: 10px;
   }
 
-  /* ✅ NEW: only hide/show these controls, not the Audio handle */
+  /* ✅ only hide/show these controls, not the Audio handle */
   .player.controls-hidden .controls-main {
     opacity: 0;
     visibility: hidden;
@@ -400,6 +400,28 @@
     hidden ? showControls() : hideControls();
   }
 
+  // ✅ Icon helpers
+  function setPlayIcon() {
+    playIcon.className = "play-icon";
+    playIcon.innerHTML = "";
+  }
+  function setPauseIcon() {
+    playIcon.className = "pause-icon";
+    playIcon.innerHTML = "<span></span><span></span>";
+  }
+
+  // ✅ Load track WITHOUT autoplay
+  function loadTrack(i) {
+    currentIndex = i;
+    audio.src = tracks[i].src;
+    audio.load();       // preload only
+    setPlayIcon();      // triangle by default until user clicks play
+  }
+
+  function playPause() {
+    audio.paused ? (audio.play(), setPauseIcon()) : (audio.pause(), setPlayIcon());
+  }
+
   Promise.all(tracks.map(t => new Promise(res => {
     const a = new Audio(t.src);
     a.onloadedmetadata = () => res(a.duration);
@@ -408,10 +430,7 @@
     offsets = times.map((_, i) => times.slice(0, i).reduce((a, b) => a + b, 0));
     totalDuration = times.reduce((a, b) => a + b, 0);
     drawMarkers();
-    loadTrack(0);
-
-    setPlayIcon(); // ✅ ensure triangle icon on load
-    });
+    loadTrack(0);       // ✅ stays paused with triangle icon
   });
 
   function drawMarkers() {
@@ -423,32 +442,11 @@
     });
   }
 
-  function loadTrack(i) {
-    currentIndex = i;
-    audio.src = tracks[i].src;
-    audio.play();
-    setPauseIcon();
-  }
-
-  function playPause() {
-    audio.paused ? (audio.play(), setPauseIcon()) : (audio.pause(), setPlayIcon());
-  }
-
-  function setPlayIcon() {
-    playIcon.className = "play-icon";
-    playIcon.innerHTML = "";
-  }
-
-  function setPauseIcon() {
-    playIcon.className = "pause-icon";
-    playIcon.innerHTML = "<span></span><span></span>";
-  }
-
   audio.addEventListener("timeupdate", () => {
     const globalTime = offsets[currentIndex] + audio.currentTime;
     progress.style.width = `${(globalTime / totalDuration) * 100}%`;
     if (audio.currentTime >= audio.duration && currentIndex < tracks.length - 1) {
-      loadTrack(currentIndex + 1);
+      loadTrack(currentIndex + 1); // loads next paused, triangle icon
     }
   });
 
@@ -457,6 +455,7 @@
     const index = offsets.findIndex((o, i) => targetTime < o + durations[i]);
     loadTrack(index);
     audio.currentTime = targetTime - offsets[index];
+    // stays paused unless user hits play
   }
 
   function handleSeek(clientX) {
