@@ -94,8 +94,6 @@
 <title>Joyful Mysteries Audio</title>
 
 <style>
-  /* IMPORTANT: since this is overlaying your panorama page,
-     keep the body transparent instead of forcing a background */
   body {
     margin: 0;
     background: transparent;
@@ -103,25 +101,86 @@
     color: #fff;
   }
 
-  /* ===== PLAYER OVERLAY (TOP RIGHT) ===== */
-  .player {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    z-index: 9999;
-
-    /* compact overlay look */
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 14px;
-    padding: 10px 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    backdrop-filter: blur(6px);
+  /* ===== POSITION (below top gray bar) ===== */
+  :root{
+    --player-top-offset: 64px;   /* 👈 move down/up to sit below your gray bar */
+    --player-right-offset: 12px;
   }
 
-  /* ===== TIMELINE (SHORTER + TRANSLUCENT + BORDER) ===== */
+  /* ===== OVERLAY SHELL ===== */
+  .player {
+    position: fixed;
+    top: var(--player-top-offset);
+    right: var(--player-right-offset);
+    z-index: 9999;
+    user-select: none;
+  }
+
+  /* A small “handle” area that stays visible */
+  .player-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 999px;
+
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+  }
+
+  .player-handle .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.8);
+    display: inline-block;
+  }
+
+  .player-handle .label {
+    font-size: 12px;
+    opacity: 0.9;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+
+  /* Main controls panel */
+  .player-panel {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+
+    transform-origin: top right;
+    transition: transform 160ms ease, opacity 160ms ease, visibility 160ms ease;
+  }
+
+  /* Collapsed state */
+  .player.collapsed .player-panel {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.92);
+    pointer-events: none;
+  }
+
+  /* ===== CONTROLS ROW ===== */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* ===== TIMELINE ===== */
   .timeline {
-    width: 150px;  /* ✅ shorter timeline (adjust if you want even shorter) */
+    width: 130px; /* shorter timeline */
     height: 8px;
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.28);
@@ -147,15 +206,7 @@
     background: rgba(255,255,255,0.35);
   }
 
-  /* ===== CONTROLS ROW ===== */
-  .controls {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* ✅ keeps things tight on the right */
-    gap: 10px;
-  }
-
-  /* ===== PLAY & VOLUME BUTTONS (TRANSLUCENT) ===== */
+  /* ===== PLAY & VOLUME BUTTONS ===== */
   .btn,
   .volume-btn {
     width: 34px;
@@ -179,7 +230,7 @@
     border-color: rgba(255,255,255,0.55);
   }
 
-  /* ===== ICONS (WHITE) ===== */
+  /* Icons (WHITE) */
   .play-icon {
     width: 0;
     height: 0;
@@ -200,10 +251,10 @@
     background: rgba(255,255,255,0.95);
   }
 
-  /* ===== VOLUME (NO LAYOUT SHIFT) ===== */
+  /* ===== VOLUME ===== */
   .volume-container {
     position: relative;
-    width: 34px;  /* fixed width so row never shifts */
+    width: 34px;
     height: 34px;
     flex: 0 0 auto;
   }
@@ -214,7 +265,7 @@
     fill: rgba(255,255,255,0.95);
   }
 
-  /* slider overlays so it won't push spacing */
+  /* Overlay slider (no layout shift) */
   .volume-slider {
     position: absolute;
     right: 0;
@@ -258,41 +309,46 @@
     cursor: pointer;
   }
 
-  /* OPTIONAL: shrink a bit more on small phones */
   @media (max-width: 420px) {
-    .timeline { width: 120px; }
-    .player { top: 10px; right: 10px; padding: 8px 10px; }
+    :root{ --player-top-offset: 58px; }
+    .timeline { width: 110px; }
   }
 </style>
 </head>
 
 <body>
 
-<div class="player">
-  <div class="controls">
-    <!-- PLAY -->
-    <button class="btn" onclick="playPause()">
-      <div class="play-icon" id="playIcon"></div>
-    </button>
+<div class="player collapsed" id="player">
+  <!-- Always-visible handle (tap/click to show/hide) -->
+  <div class="player-handle" id="playerHandle" aria-label="Toggle audio controls">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="label">Audio</span>
+  </div>
 
-    <!-- TIMELINE -->
-    <div class="timeline" id="timeline">
-      <div class="timeline-progress" id="progress"></div>
-    </div>
-
-    <!-- VOLUME -->
-    <div class="volume-container" id="volumeContainer">
-      <button class="volume-btn" onclick="toggleVolume(event)">
-        <svg id="volIcon" viewBox="0 0 24 24">
-          <path d="M3 9v6h4l5 5V4L7 9H3z"></path>
-          <path id="wave1" d="M14.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"></path>
-          <path id="wave2" d="M16.5 12c0 2.5-1.46 4.67-3.5 5.77v-2.06c1.44-.93 2.5-2.61 2.5-4.71s-1.06-3.78-2.5-4.71V6.23c2.04 1.1 3.5 3.27 3.5 5.77z"></path>
-        </svg>
+  <!-- The actual controls (hidden until expanded) -->
+  <div class="player-panel" id="playerPanel">
+    <div class="controls">
+      <button class="btn" onclick="playPause()">
+        <div class="play-icon" id="playIcon"></div>
       </button>
 
-      <input type="range" class="volume-slider"
-        min="0" max="1" step="0.01" value="1"
-        oninput="setVolume(this.value)">
+      <div class="timeline" id="timeline">
+        <div class="timeline-progress" id="progress"></div>
+      </div>
+
+      <div class="volume-container" id="volumeContainer">
+        <button class="volume-btn" onclick="toggleVolume(event)">
+          <svg id="volIcon" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3z"></path>
+            <path id="wave1" d="M14.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"></path>
+            <path id="wave2" d="M16.5 12c0 2.5-1.46 4.67-3.5 5.77v-2.06c1.44-.93 2.5-2.61 2.5-4.71s-1.06-3.78-2.5-4.71V6.23c2.04 1.1 3.5 3.27 3.5 5.77z"></path>
+          </svg>
+        </button>
+
+        <input type="range" class="volume-slider"
+          min="0" max="1" step="0.01" value="1"
+          oninput="setVolume(this.value)">
+      </div>
     </div>
   </div>
 </div>
@@ -314,6 +370,10 @@
   const progress = document.getElementById("progress");
   const volIcon = document.getElementById("volIcon");
   const volumeContainer = document.getElementById("volumeContainer");
+
+  const player = document.getElementById("player");
+  const playerHandle = document.getElementById("playerHandle");
+  const playerPanel = document.getElementById("playerPanel");
 
   let durations = [], offsets = [], totalDuration = 0;
   let currentIndex = 0;
@@ -409,8 +469,20 @@
     volumeContainer.classList.toggle("open");
   }
 
-  document.addEventListener("click", e => {
-    if (!volumeContainer.contains(e.target)) {
+  // ===== SHOW/HIDE BEHAVIOR =====
+  function togglePlayer() {
+    player.classList.toggle("collapsed");
+  }
+
+  playerHandle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    togglePlayer();
+  });
+
+  // Optional: click anywhere else hides it
+  document.addEventListener("click", (e) => {
+    if (!player.contains(e.target)) {
+      player.classList.add("collapsed");
       volumeContainer.classList.remove("open");
     }
   });
