@@ -101,13 +101,13 @@
     color: #fff;
   }
 
-  /* ===== POSITION (below top gray bar) ===== */
+  /* Adjust these if needed */
   :root{
-    --player-top-offset: 64px;   /* 👈 move down/up to sit below your gray bar */
-    --player-right-offset: 22px;
+    --player-top-offset: 64px;   /* below gray bar */
+    --player-right-offset: 6px;  /* ✅ closer to the corner (red box area) */
   }
 
-  /* ===== OVERLAY SHELL ===== */
+  /* ===== PLAYER OVERLAY (DESKTOP = TOP RIGHT) ===== */
   .player {
     position: fixed;
     top: var(--player-top-offset);
@@ -116,7 +116,7 @@
     user-select: none;
   }
 
-  /* A small “handle” area that stays visible */
+  /* Handle (always visible) */
   .player-handle {
     display: inline-flex;
     align-items: center;
@@ -131,6 +131,7 @@
     border: 1px solid rgba(255,255,255,0.18);
     backdrop-filter: blur(6px);
     cursor: pointer;
+    white-space: nowrap;
   }
 
   .player-handle .dot {
@@ -145,10 +146,9 @@
     font-size: 12px;
     opacity: 0.9;
     letter-spacing: 0.2px;
-    white-space: nowrap;
   }
 
-  /* Main controls panel */
+  /* Controls panel */
   .player-panel {
     margin-top: 8px;
     padding: 10px 12px;
@@ -174,13 +174,13 @@
   .controls {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-end; /* desktop aligns right */
     gap: 10px;
   }
 
-  /* ===== TIMELINE ===== */
+  /* ===== TIMELINE (short) ===== */
   .timeline {
-    width: 130px; /* shorter timeline */
+    width: 120px; /* ✅ even shorter */
     height: 8px;
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.28);
@@ -230,7 +230,7 @@
     border-color: rgba(255,255,255,0.55);
   }
 
-  /* Icons (WHITE) */
+  /* ===== ICONS (WHITE) ===== */
   .play-icon {
     width: 0;
     height: 0;
@@ -265,7 +265,6 @@
     fill: rgba(255,255,255,0.95);
   }
 
-  /* Overlay slider (no layout shift) */
   .volume-slider {
     position: absolute;
     right: 0;
@@ -309,25 +308,41 @@
     cursor: pointer;
   }
 
-  @media (max-width: 420px) {
-    :root{ --player-top-offset: 58px; }
-    .timeline { width: 110px; }
+  /* ✅ MOBILE: CENTER TOP INSTEAD OF TOP RIGHT */
+  @media (max-width: 768px) {
+    .player {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      top: calc(var(--player-top-offset) + 6px);
+    }
+
+    .controls {
+      justify-content: center;
+    }
+
+    .player-panel {
+      transform-origin: top center;
+    }
   }
 </style>
 </head>
 
 <body>
 
-<div class="player collapsed" id="player">
-  <!-- Always-visible handle (tap/click to show/hide) -->
+<!-- ✅ Starts expanded (NO "collapsed" class) -->
+<div class="player" id="player">
+
+  <!-- Handle -->
   <div class="player-handle" id="playerHandle" aria-label="Toggle audio controls">
     <span class="dot"></span><span class="dot"></span><span class="dot"></span>
     <span class="label">Audio</span>
   </div>
 
-  <!-- The actual controls (hidden until expanded) -->
+  <!-- Panel -->
   <div class="player-panel" id="playerPanel">
     <div class="controls">
+
       <button class="btn" onclick="playPause()">
         <div class="play-icon" id="playIcon"></div>
       </button>
@@ -349,6 +364,7 @@
           min="0" max="1" step="0.01" value="1"
           oninput="setVolume(this.value)">
       </div>
+
     </div>
   </div>
 </div>
@@ -373,7 +389,6 @@
 
   const player = document.getElementById("player");
   const playerHandle = document.getElementById("playerHandle");
-  const playerPanel = document.getElementById("playerPanel");
 
   let durations = [], offsets = [], totalDuration = 0;
   let currentIndex = 0;
@@ -469,20 +484,16 @@
     volumeContainer.classList.toggle("open");
   }
 
-  // ===== SHOW/HIDE BEHAVIOR =====
-  function togglePlayer() {
-    player.classList.toggle("collapsed");
-  }
-
+  // Tap handle toggles panel
   playerHandle.addEventListener("click", (e) => {
     e.stopPropagation();
-    togglePlayer();
+    player.classList.toggle("collapsed");
+    volumeContainer.classList.remove("open");
   });
 
-  // Optional: click anywhere else hides it
+  // Clicking outside closes slider (but keeps panel open)
   document.addEventListener("click", (e) => {
-    if (!player.contains(e.target)) {
-      player.classList.add("collapsed");
+    if (!volumeContainer.contains(e.target)) {
       volumeContainer.classList.remove("open");
     }
   });
