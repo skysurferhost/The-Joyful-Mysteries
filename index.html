@@ -110,9 +110,9 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  /* ===== TIMELINE ===== */
+  /* ===== TIMELINE (shorter + translucent + gray border) ===== */
   .timeline {
-    width: 230px;
+    width: 230px; /* shorter timeline */
     height: 8px;
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.28);
@@ -147,7 +147,7 @@
     margin-top: 14px;
   }
 
-  /* ===== PLAY & VOLUME BUTTONS (TRANSLUCENT) ===== */
+  /* ===== PLAY & VOLUME BUTTONS (TRANSLUCENT, MORE VISIBLE THAN TIMELINE) ===== */
   .btn,
   .volume-btn {
     width: 34px;
@@ -171,10 +171,11 @@
     border-color: rgba(255,255,255,0.55);
   }
 
+  /* ===== ICONS (WHITE) ===== */
   .play-icon {
     width: 0;
     height: 0;
-    border-left: 14px solid rgba(0,0,0,0.9);
+    border-left: 14px solid rgba(255,255,255,0.95);
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
     margin-left: 2px;
@@ -188,13 +189,13 @@
   .pause-icon span {
     width: 5px;
     height: 16px;
-    background: rgba(0,0,0,0.9);
+    background: rgba(255,255,255,0.95);
   }
 
-  /* ===== VOLUME ===== */
+  /* ===== VOLUME (no layout shift) ===== */
   .volume-container {
-    position: relative;
-    width: 34px;
+    position: relative; /* anchor for absolute slider */
+    width: 34px;        /* fixed width: row never shifts */
     height: 34px;
     flex: 0 0 auto;
   }
@@ -202,9 +203,10 @@
   .volume-btn svg {
     width: 18px;
     height: 18px;
-    fill: rgba(0,0,0,0.9);
+    fill: rgba(255,255,255,0.95); /* white icon */
   }
 
+  /* Slider overlays so it won't push spacing */
   .volume-slider {
     position: absolute;
     right: 0;
@@ -258,7 +260,6 @@
 
 <div class="player">
   <div class="controls">
-
     <!-- PLAY -->
     <button class="btn" onclick="playPause()">
       <div class="play-icon" id="playIcon"></div>
@@ -283,7 +284,6 @@
         min="0" max="1" step="0.01" value="1"
         oninput="setVolume(this.value)">
     </div>
-
   </div>
 </div>
 
