@@ -94,25 +94,34 @@
 <title>Joyful Mysteries Audio</title>
 
 <style>
+  /* IMPORTANT: since this is overlaying your panorama page,
+     keep the body transparent instead of forcing a background */
   body {
     margin: 0;
-    background: #111;
+    background: transparent;
     font-family: Arial, sans-serif;
     color: #fff;
   }
 
+  /* ===== PLAYER OVERLAY (TOP RIGHT) ===== */
   .player {
-    max-width: 480px;
-    margin: 20px auto;
-    background: #1b1b1b;
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 9999;
+
+    /* compact overlay look */
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.18);
     border-radius: 14px;
-    padding: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    padding: 10px 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
   }
 
-  /* ===== TIMELINE (shorter + translucent + gray border) ===== */
+  /* ===== TIMELINE (SHORTER + TRANSLUCENT + BORDER) ===== */
   .timeline {
-    width: 230px; /* shorter timeline */
+    width: 150px;  /* ✅ shorter timeline (adjust if you want even shorter) */
     height: 8px;
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.28);
@@ -142,12 +151,11 @@
   .controls {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 14px;
+    justify-content: flex-end; /* ✅ keeps things tight on the right */
+    gap: 10px;
   }
 
-  /* ===== PLAY & VOLUME BUTTONS (TRANSLUCENT, MORE VISIBLE THAN TIMELINE) ===== */
+  /* ===== PLAY & VOLUME BUTTONS (TRANSLUCENT) ===== */
   .btn,
   .volume-btn {
     width: 34px;
@@ -192,10 +200,10 @@
     background: rgba(255,255,255,0.95);
   }
 
-  /* ===== VOLUME (no layout shift) ===== */
+  /* ===== VOLUME (NO LAYOUT SHIFT) ===== */
   .volume-container {
-    position: relative; /* anchor for absolute slider */
-    width: 34px;        /* fixed width: row never shifts */
+    position: relative;
+    width: 34px;  /* fixed width so row never shifts */
     height: 34px;
     flex: 0 0 auto;
   }
@@ -203,15 +211,15 @@
   .volume-btn svg {
     width: 18px;
     height: 18px;
-    fill: rgba(255,255,255,0.95); /* white icon */
+    fill: rgba(255,255,255,0.95);
   }
 
-  /* Slider overlays so it won't push spacing */
+  /* slider overlays so it won't push spacing */
   .volume-slider {
     position: absolute;
     right: 0;
     top: 42px;
-    width: 110px;
+    width: 120px;
     display: none;
     z-index: 999;
   }
@@ -250,8 +258,10 @@
     cursor: pointer;
   }
 
+  /* OPTIONAL: shrink a bit more on small phones */
   @media (max-width: 420px) {
-    .timeline { width: 190px; }
+    .timeline { width: 120px; }
+    .player { top: 10px; right: 10px; padding: 8px 10px; }
   }
 </style>
 </head>
