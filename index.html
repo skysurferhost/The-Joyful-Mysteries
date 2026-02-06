@@ -388,26 +388,19 @@
   let currentIndex = 0;
   let dragging = false;
 
-  // ✅ track first user interaction for click-to-play
+  // ✅ click-to-play gate
   let userHasInteracted = false;
 
-  // ✅ autoplay next track if user started playback
+  // ✅ autoplay next if user started playback
   let shouldAutoplayNext = false;
 
-  // ✅ NEW: remember volume across tracks (and across reloads)
-  const VOLUME_KEY = "joyful_mysteries_volume";
+  // ✅ NEW: remember volume during this session (across tracks, NOT across reload)
+  // This is the actual audio gain (0.0–1.0). Not “dB”, but it is the true loudness control.
   let rememberedVolume = 1;
 
-  try {
-    const saved = localStorage.getItem(VOLUME_KEY);
-    if (saved !== null && !Number.isNaN(parseFloat(saved))) {
-      rememberedVolume = Math.min(Math.max(parseFloat(saved), 0), 1);
-    }
-  } catch (e) {}
-
-  // Apply remembered volume immediately
+  // Apply initial volume
   audio.volume = rememberedVolume;
-  if (volumeSliderEl) volumeSliderEl.value = String(rememberedVolume);
+  volumeSliderEl.value = String(rememberedVolume);
 
   // ✅ Hide controls helper (keeps handle visible)
   function hideControls() {
@@ -432,15 +425,15 @@
     playIcon.innerHTML = "<span></span><span></span>";
   }
 
-  // ✅ Load track (optionally autoplay)
+  // ✅ Load track (optionally autoplay) and ALWAYS re-apply current volume
   function loadTrack(i, autoplay = false) {
     currentIndex = i;
     audio.src = tracks[i].src;
     audio.load();
 
-    // ✅ ensure remembered volume applies to every track
+    // Keep volume consistent across tracks
     audio.volume = rememberedVolume;
-    if (volumeSliderEl) volumeSliderEl.value = String(rememberedVolume);
+    volumeSliderEl.value = String(rememberedVolume);
 
     if (autoplay) {
       audio.play().then(() => setPauseIcon()).catch(() => setPlayIcon());
@@ -471,7 +464,7 @@
     offsets = times.map((_, i) => times.slice(0, i).reduce((a, b) => a + b, 0));
     totalDuration = times.reduce((a, b) => a + b, 0);
     drawMarkers();
-    loadTrack(0, false); // ✅ stays paused with triangle icon
+    loadTrack(0, false);
   });
 
   function drawMarkers() {
@@ -489,11 +482,10 @@
     progress.style.width = `${(globalTime / totalDuration) * 100}%`;
   });
 
-  // ✅ When a track ends, auto-play the next one (if user started playback)
+  // ✅ Auto-play next track when one ends (if user started playback)
   audio.addEventListener("ended", () => {
     if (currentIndex < tracks.length - 1) {
-      currentIndex++;
-      loadTrack(currentIndex, shouldAutoplayNext);
+      loadTrack(currentIndex + 1, shouldAutoplayNext);
     } else {
       shouldAutoplayNext = false;
       setPlayIcon();
@@ -533,22 +525,23 @@
   timeline.addEventListener("touchmove", e => dragging && handleSeek(e.touches[0].clientX), { passive: true });
   window.addEventListener("touchend", () => dragging = false);
 
-  // ✅ Remember volume + persist
+  // ✅ Session-only volume memory (applies to actual audio output, not just the slider)
   function setVolume(v) {
-    const vol = Math.min(Math.max(parseFloat(v), 0), 1);
-    rememberedVolume = vol;
-    audio.volume = vol;
-
-    // Keep the little waves responsive
-    volIcon.querySelector("#wave2").style.display = vol < 0.4 ? "none" : "";
-    volIcon.querySelector("#wave1").style.display = vol < 0.2 ? "none" : "";
-
-    try {
-      localStorage.setItem("joyful_mysteries_volume", String(vol));
-    } catch (e) {}
+    const vol = Math.min(Mathmax(parseFloat(v), 0), 1);
   }
 
-  // Ensure icon state correct on load based on remembered volume
+  // Fix Math.max typo + apply waves + remember volume
+  function setVolume(v) {
+    const vol = Math.min(Math.max(parseFloat(v), 0), 1);
+    rememberedVolume = vol;     // remember for next track
+    audio.volume = vol;         // actual loudness
+    volumeSliderEl.value = String(vol);
+
+    volIcon.querySelector("#wave2").style.display = vol < 0.4 ? "none" : "";
+    volIcon.querySelector("#wave1").style.display = vol < 0.2 ? "none" : "";
+  }
+
+  // Initialize waves based on default volume
   setVolume(rememberedVolume);
 
   function toggleVolume(e) {
