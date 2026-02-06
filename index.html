@@ -346,7 +346,7 @@
             </svg>
           </button>
 
-          <input type="range" class="volume-slider"
+          <input id="volumeSlider" type="range" class="volume-slider"
             min="0" max="1" step="0.01" value="1"
             oninput="setVolume(this.value)">
         </div>
@@ -379,6 +379,7 @@
   const progress = document.getElementById("progress");
   const volIcon = document.getElementById("volIcon");
   const volumeContainer = document.getElementById("volumeContainer");
+  const volumeSliderEl = document.getElementById("volumeSlider");
   const player = document.getElementById("player");
   const playerHandle = document.getElementById("playerHandle");
   const controlsMain = document.getElementById("controlsMain");
@@ -390,9 +391,23 @@
   // ✅ track first user interaction for click-to-play
   let userHasInteracted = false;
 
-  // ✅ track whether we should autoplay next track
-  // (true if user has started playback)
+  // ✅ autoplay next track if user started playback
   let shouldAutoplayNext = false;
+
+  // ✅ NEW: remember volume across tracks (and across reloads)
+  const VOLUME_KEY = "joyful_mysteries_volume";
+  let rememberedVolume = 1;
+
+  try {
+    const saved = localStorage.getItem(VOLUME_KEY);
+    if (saved !== null && !Number.isNaN(parseFloat(saved))) {
+      rememberedVolume = Math.min(Math.max(parseFloat(saved), 0), 1);
+    }
+  } catch (e) {}
+
+  // Apply remembered volume immediately
+  audio.volume = rememberedVolume;
+  if (volumeSliderEl) volumeSliderEl.value = String(rememberedVolume);
 
   // ✅ Hide controls helper (keeps handle visible)
   function hideControls() {
@@ -422,6 +437,10 @@
     currentIndex = i;
     audio.src = tracks[i].src;
     audio.load();
+
+    // ✅ ensure remembered volume applies to every track
+    audio.volume = rememberedVolume;
+    if (volumeSliderEl) volumeSliderEl.value = String(rememberedVolume);
 
     if (autoplay) {
       audio.play().then(() => setPauseIcon()).catch(() => setPlayIcon());
@@ -470,13 +489,12 @@
     progress.style.width = `${(globalTime / totalDuration) * 100}%`;
   });
 
-  // ✅ NEW: when a track ends, auto-play the next one (if user started playback)
+  // ✅ When a track ends, auto-play the next one (if user started playback)
   audio.addEventListener("ended", () => {
     if (currentIndex < tracks.length - 1) {
       currentIndex++;
       loadTrack(currentIndex, shouldAutoplayNext);
     } else {
-      // reached end of playlist
       shouldAutoplayNext = false;
       setPlayIcon();
     }
@@ -487,7 +505,6 @@
     const index = offsets.findIndex((o, i) => targetTime < o + durations[i]);
 
     const wasPlaying = !audio.paused;
-    // keep the autoplay chain consistent with the current state
     shouldAutoplayNext = wasPlaying;
 
     loadTrack(index, wasPlaying);
@@ -516,11 +533,23 @@
   timeline.addEventListener("touchmove", e => dragging && handleSeek(e.touches[0].clientX), { passive: true });
   window.addEventListener("touchend", () => dragging = false);
 
+  // ✅ Remember volume + persist
   function setVolume(v) {
-    audio.volume = v;
-    volIcon.querySelector("#wave2").style.display = v < 0.4 ? "none" : "";
-    volIcon.querySelector("#wave1").style.display = v < 0.2 ? "none" : "";
+    const vol = Math.min(Math.max(parseFloat(v), 0), 1);
+    rememberedVolume = vol;
+    audio.volume = vol;
+
+    // Keep the little waves responsive
+    volIcon.querySelector("#wave2").style.display = vol < 0.4 ? "none" : "";
+    volIcon.querySelector("#wave1").style.display = vol < 0.2 ? "none" : "";
+
+    try {
+      localStorage.setItem("joyful_mysteries_volume", String(vol));
+    } catch (e) {}
   }
+
+  // Ensure icon state correct on load based on remembered volume
+  setVolume(rememberedVolume);
 
   function toggleVolume(e) {
     e.stopPropagation();
@@ -545,7 +574,6 @@
     if (!userHasInteracted) {
       userHasInteracted = true;
 
-      // Start playback + enable autoplay chain
       if (audio.paused) {
         shouldAutoplayNext = true;
         audio.play().then(() => setPauseIcon()).catch(() => {});
