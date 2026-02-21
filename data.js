@@ -2,7 +2,7 @@ var APP_DATA = {
   "scenes": [
     {
       "id": "0-1-the-annunciation",
-      "name": "一、圣母领报",
+      "name": "1. The Annunciation",
       "levels": [
         {
           "tileSize": 256,
