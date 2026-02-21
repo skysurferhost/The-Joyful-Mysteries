@@ -2,7 +2,7 @@ var APP_DATA = {
   "scenes": [
     {
       "id": "0-1-the-annunciation",
-      "name": "1. The Annunciation",
+      "name": "一、圣母领报",
       "levels": [
         {
           "tileSize": 256,
@@ -44,7 +44,7 @@ var APP_DATA = {
         {
           "yaw": 1.160054435162591,
           "pitch": -0.28169234161257073,
-          "title": "<p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">The Birth of Jesus Foretold</span><o:p></o:p></p>",
+          "title": "<p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">圣母领报</span><o:p></o:p></p>",
           "text": "<p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">In the sixth month the angel Gabriel was sent from God to a city of Galilee named Nazareth, to a virgin betrothed to a man whose name was Joseph, of the house of David; and the virgin’s name was Mary. And he came to her and said, “Hail, full of grace, the Lord is with you!” But she was greatly troubled at the saying, and considered in her mind what sort of greeting this might be. And the angel said to her, “Do not be afraid, Mary, for you have found favor with God. And behold, you will conceive in your womb and bear a son, and you shall call his name Jesus.</div></span><o:p></o:p></p><p class=\"MsoNormal\"><br></p><p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">He will be great, and will be called the Son of the Most High; and the Lord God will give to him the throne of his father David,&nbsp;and he will reign over the house of Jacob for ever; and of his kingdom there will be no end.”</div></span><o:p></o:p></p><p class=\"MsoNormal\"><br></p><p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">And Mary said to the angel, “How can this be, since I have no husband?” And the angel said to her,</div></span><o:p></o:p></p><p class=\"MsoNormal\"><br></p><p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">“The Holy Spirit will come upon you, and the power of the Most High will overshadow you; therefore the child to be born will be called holy, the Son of God.</div></span><o:p></o:p></p><p class=\"MsoNormal\"><br></p><p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">And behold, your kinswoman Elizabeth in her old age has also conceived a son; and this is the sixth month with her who was called barren. For with God nothing will be impossible.” And Mary said, “Behold, I am the handmaid of the Lord; let it be to me according to your word.” And the angel departed from her.<o:p></o:p></span></p><p class=\"MsoNormal\"><span style=\"font-size: 14pt; line-height: 115%;\">(Luke 1:26-38)</div>"
         }
       ]
