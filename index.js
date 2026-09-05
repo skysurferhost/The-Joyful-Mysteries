@@ -359,13 +359,19 @@
     }
   });
 
-  // SKY SURFER v6.4: robust idle UI compatibility layer.
+  // SKY SURFER v6.5: robust idle UI compatibility layer.
   var ssNavIdleDelay = 3000;
   var ssNavIdleTimer = null;
 
   function ssNavApplyIdleState(isIdle) {
     if (!document.body) return;
     document.body.classList.toggle('ss-nav-hotspots-idle', !!isIdle);
+    if (isIdle) {
+      var desktopPreviews = document.querySelectorAll('.link-hotspot.ss-desktop-preview-visible');
+      for (var i = 0; i < desktopPreviews.length; i++) {
+        desktopPreviews[i].classList.remove('ss-desktop-preview-visible');
+      }
+    }
   }
 
   function ssNavScheduleHide() {
@@ -519,6 +525,31 @@
       }
 
       switchScene(findSceneById(hotspot.target));
+    });
+
+    // Desktop preview intent: do not rely on CSS :hover alone. In a 360 viewer
+    // the hotspot itself moves while the panorama pans/autorotates, so a moving
+    // hotspot can slide underneath a stationary mouse and accidentally trigger
+    // :hover. Only a genuine mouse move over the hotspot with no button pressed
+    // is allowed to reveal the desktop destination preview.
+    wrapper.addEventListener('mousemove', function(event) {
+      var touchLike = document.body.classList.contains('touch') ||
+                      document.body.classList.contains('mobile') ||
+                      (window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches);
+      if (touchLike || (event && event.isTrusted === false)) return;
+      if (event && typeof event.buttons === 'number' && event.buttons !== 0) {
+        wrapper.classList.remove('ss-desktop-preview-visible');
+        return;
+      }
+      wrapper.classList.add('ss-desktop-preview-visible');
+    });
+
+    wrapper.addEventListener('mouseleave', function() {
+      wrapper.classList.remove('ss-desktop-preview-visible');
+    });
+
+    wrapper.addEventListener('mousedown', function() {
+      wrapper.classList.remove('ss-desktop-preview-visible');
     });
 
     // Prevent touch and scroll events from reaching the parent element.

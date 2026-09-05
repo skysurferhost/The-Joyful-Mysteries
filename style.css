@@ -937,7 +937,7 @@ body.view-control-buttons .viewControlButton { display: block; }
   box-sizing: border-box !important;
 }
 
-.no-touch .link-hotspot:hover .ss-scene-preview-card {
+.link-hotspot.ss-desktop-preview-visible .ss-scene-preview-card {
   opacity: 1;
   -ms-transform: translateX(0);
   -webkit-transform: translateX(0);
@@ -949,8 +949,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 .touch .link-hotspot.preview-visible .ss-scene-preview-card,
-.mobile .link-hotspot.preview-visible .ss-scene-preview-card,
-.link-hotspot.preview-visible .ss-scene-preview-card {
+.mobile .link-hotspot.preview-visible .ss-scene-preview-card {
   opacity: 1;
 }
 
@@ -1076,7 +1075,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Sky Surfer v6.4 robust idle interface.
+/* Sky Surfer v6.5 robust idle interface.
    Runtime JS marks standard and recognized legacy/custom controls with
    .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
 .ss-idle-ui {
