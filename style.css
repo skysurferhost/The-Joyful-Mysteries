@@ -840,97 +840,157 @@ body.view-control-buttons .viewControlButton { display: block; }
 
 /* ================================================================
    SKY_SURFER_PREVIEW_ENHANCER_V33
-   Destination preview for Marzipano link hotspots.
-   Desktop: hover. Touch: first tap previews, second tap enters.
+   Isolated Sky Surfer destination preview.
+   It intentionally avoids Marzipano's .link-hotspot-tooltip selectors
+   so customized legacy CSS cannot crop or resize the generated 16:9 image.
    ================================================================ */
-.scene-preview-tooltip {
-  width: 270px;
-  max-width: none;
-  left: 100%;
-  top: 50%;
-  margin-left: 12px;
-  padding: 6px;
-  border-radius: 12px;
-  background: rgba(20, 20, 20, 0.94);
-  white-space: normal;
-  overflow: hidden;
-  box-sizing: border-box;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+.ss-scene-preview-anchor {
+  position: absolute !important;
+  display: block !important;
+  left: 100% !important;
+  top: 50% !important;
+  bottom: auto !important;
+  width: 270px !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 0 0 12px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+  pointer-events: none !important;
+  opacity: 1 !important;
+  box-sizing: border-box !important;
+  z-index: 20 !important;
+  -ms-transform: translateY(-50%) !important;
+  -webkit-transform: translateY(-50%) !important;
+  transform: translateY(-50%) !important;
+}
+
+.ss-scene-preview-card {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 6px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: rgba(20,20,20,.94) !important;
+  color: #fff !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 6px 22px rgba(0,0,0,.45) !important;
   opacity: 0;
-  -ms-transform: translateY(-50%) translateX(-8px);
-  -webkit-transform: translateY(-50%) translateX(-8px);
-  transform: translateY(-50%) translateX(-8px);
-  -webkit-transition: opacity .2s ease, -webkit-transform .2s ease;
-  transition: opacity .2s ease, transform .2s ease;
+  -ms-transform: translateX(-8px);
+  -webkit-transform: translateX(-8px);
+  transform: translateX(-8px);
+  -webkit-transition: opacity .2s ease, -webkit-transform .2s ease !important;
+  transition: opacity .2s ease, transform .2s ease !important;
 }
 
-.scene-preview-image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  height: auto;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 8px;
+.ss-scene-preview-image {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
 }
 
-.scene-preview-title {
-  padding: 7px 8px 5px;
-  color: #fff;
-  font-size: 15px;
-  line-height: 1.2;
-  text-align: center;
-  white-space: normal;
+.ss-scene-preview-title {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 7px 8px 5px !important;
+  color: #fff !important;
+  background: transparent !important;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+  unicode-bidi: plaintext;
+  box-sizing: border-box !important;
 }
 
-.no-touch .link-hotspot:hover .scene-preview-tooltip {
+.no-touch .link-hotspot:hover .ss-scene-preview-card {
   opacity: 1;
-  -ms-transform: translateY(-50%) translateX(0);
-  -webkit-transform: translateY(-50%) translateX(0);
-  transform: translateY(-50%) translateX(0);
+  -ms-transform: translateX(0);
+  -webkit-transform: translateX(0);
+  transform: translateX(0);
 }
 
 .link-hotspot {
   touch-action: manipulation;
 }
 
-.touch .link-hotspot.preview-visible .scene-preview-tooltip,
-.mobile .link-hotspot.preview-visible .scene-preview-tooltip,
-.link-hotspot.preview-visible .scene-preview-tooltip {
+.touch .link-hotspot.preview-visible .ss-scene-preview-card,
+.mobile .link-hotspot.preview-visible .ss-scene-preview-card,
+.link-hotspot.preview-visible .ss-scene-preview-card {
   opacity: 1;
-  pointer-events: none;
 }
 
 @media (hover: none), (pointer: coarse) {
-  .scene-preview-tooltip {
-    left: 50%;
-    top: auto;
-    bottom: calc(100% + 12px);
-    margin-left: 0;
-    width: min(230px, calc(100vw - 24px));
-    opacity: 0;
-    -ms-transform: translateX(-50%) translateY(8px);
-    -webkit-transform: translateX(-50%) translateY(8px);
-    transform: translateX(-50%) translateY(8px);
-    z-index: 20;
+  .ss-scene-preview-anchor {
+    left: 50% !important;
+    top: auto !important;
+    bottom: calc(100% + 12px) !important;
+    width: min(230px, calc(100vw - 24px)) !important;
+    margin: 0 !important;
+    -ms-transform: translateX(-50%) !important;
+    -webkit-transform: translateX(-50%) !important;
+    transform: translateX(-50%) !important;
   }
 
-  .link-hotspot.preview-visible .scene-preview-tooltip {
+  .ss-scene-preview-card {
+    opacity: 0;
+    -ms-transform: translateY(8px);
+    -webkit-transform: translateY(8px);
+    transform: translateY(8px);
+  }
+
+  .link-hotspot.preview-visible .ss-scene-preview-card {
     opacity: 1;
-    -ms-transform: translateX(-50%) translateY(0);
-    -webkit-transform: translateX(-50%) translateY(0);
-    transform: translateX(-50%) translateY(0);
+    -ms-transform: translateY(0);
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
   }
 }
 
 @media (max-width: 430px) {
-  .scene-preview-tooltip {
-    width: min(230px, calc(100vw - 20px));
-    padding: 5px;
+  .ss-scene-preview-anchor {
+    width: min(230px, calc(100vw - 20px)) !important;
   }
-  .scene-preview-title {
-    font-size: 13px;
-    padding: 6px 6px 4px;
+  .ss-scene-preview-card {
+    padding: 5px !important;
+  }
+  .ss-scene-preview-title {
+    font-size: 13px !important;
+    padding: 6px 6px 4px !important;
   }
 }
 
@@ -981,90 +1041,6 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Modern scene-list toggle: transparent when closed, subtle glass when open. */
-#sceneListToggle {
-  top: 9px !important;
-  left: 9px !important;
-  width: 40px !important;
-  height: 40px !important;
-  padding: 0 !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  border: 1px solid transparent !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
-  transition: background .18s ease,border-color .18s ease,box-shadow .18s ease !important;
-}
-#sceneListToggle.enabled {
-  background: rgba(28,36,47,.26) !important;
-  border-color: rgba(255,255,255,.16) !important;
-  box-shadow: 0 5px 18px rgba(0,0,0,.12) !important;
-  -webkit-backdrop-filter: blur(7px) saturate(115%);
-  backdrop-filter: blur(7px) saturate(115%);
-}
-#sceneListToggle .icon { opacity:0 !important; width:100% !important; height:100% !important; top:0 !important; right:0 !important; }
-#sceneListToggle::before { content:''; position:absolute; inset:0; background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20d%3D%22M14%2019h36M14%2032h36M14%2045h36%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"); background-repeat:no-repeat; background-position:center; background-size:72% 72%; pointer-events:none; }
-#sceneListToggle.enabled::before { background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20d%3D%22M18%2018l28%2028M46%2018L18%2046%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"); }
-/* Lighter, more refined scene-list glass instead of the original heavy gray block. */
-#sceneList { padding-top: 54px !important; }
-.mobile #sceneList {
-  /* Follow Marzipano's mobile structure: the outer scene-list stays fixed
-     to the viewer height; the inner .scenes panel handles scrolling. */
-  position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  max-height: 100% !important;
-  padding-top: 60px !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-#sceneList .scenes {
-  background: rgba(28,36,47,.44) !important;
-  border-right: 1px solid rgba(255,255,255,.11);
-  box-shadow: 8px 10px 28px rgba(0,0,0,.12);
-  -webkit-backdrop-filter: blur(7px) saturate(110%);
-  backdrop-filter: blur(7px) saturate(110%);
-}
-.mobile #sceneList .scenes {
-  /* The scrolling panel itself carries the glass background so every
-     visible scene row remains covered from the first item to the last. */
-  display: block !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100% !important;
-  max-height: 100% !important;
-  box-sizing: border-box !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  background: rgba(28,36,47,.44) !important;
-  background-color: rgba(28,36,47,.44) !important;
-  background-image: none !important;
-  border-right: 0 !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: blur(7px) saturate(110%);
-  backdrop-filter: blur(7px) saturate(110%);
-}
-#sceneList .scene { background: transparent !important; transition: background .16s ease, box-shadow .16s ease; }
-.no-touch #sceneList .scene:hover { background: rgba(255,255,255,.10) !important; }
-#sceneList .scene.current {
-  background: rgba(255,255,255,.16) !important;
-  box-shadow: inset 3px 0 0 rgba(255,255,255,.72);
-}
-#sceneList .scene.current .text { font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.22); }
-.mobile #sceneListToggle { top:5px !important; left:5px !important; width:50px !important; height:50px !important; }
-
 
 /* SKY SURFER: reliable long scene-list scrolling on phones.
    This is intentionally applied whether or not the optional modern
@@ -1075,7 +1051,7 @@ body.view-control-buttons .viewControlButton { display: block; }
   height: 100% !important;
   max-height: 100% !important;
   left: -100% !important;
-  padding-top: 60px !important;
+  padding-top: 50px !important;
   box-sizing: border-box !important;
   overflow-x: hidden !important;
   overflow-y: hidden !important;
@@ -1094,47 +1070,31 @@ body.view-control-buttons .viewControlButton { display: block; }
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  background: rgba(28,36,47,.44) !important;
-  background-color: rgba(28,36,47,.44) !important;
+  background: rgba(58,68,84,.80) !important;
+  background-color: rgba(58,68,84,.80) !important;
   background-image: none !important;
-  -webkit-backdrop-filter: blur(7px) saturate(110%);
-  backdrop-filter: blur(7px) saturate(110%);
 }
 
 
-/* Sky Surfer optional idle-hide behavior.
-   IMPORTANT: opacity is the only animated hotspot property. Marzipano updates
-   hotspot transforms continuously while the panorama moves, so transform must
-   never be transitioned here or arrows can lag/drift behind their true position. */
-.link-hotspot,
-#titleBar,
-#sceneListToggle,
-#autorotateToggle,
-#fullscreenToggle,
-.viewControlButton,
-.ss-audio-player {
-  opacity: 1;
+/* Sky Surfer v6.3 robust idle interface.
+   Runtime JS marks standard and recognized legacy/custom controls with
+   .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
+.ss-idle-ui {
   -webkit-transition: opacity .24s ease !important;
   transition: opacity .24s ease !important;
 }
 
-/* Hide next-scene arrows plus the normal top/bottom tour chrome after inactivity. */
-body.ss-nav-hotspots-idle .link-hotspot,
-body.ss-nav-hotspots-idle #titleBar,
-body.ss-nav-hotspots-idle #sceneListToggle,
-body.ss-nav-hotspots-idle #autorotateToggle,
-body.ss-nav-hotspots-idle #fullscreenToggle,
-body.ss-nav-hotspots-idle .viewControlButton,
-body.ss-nav-hotspots-idle .ss-audio-player {
+body.ss-nav-hotspots-idle .ss-idle-ui {
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
-/* Keep the opened scene list itself visible and usable. Movement/touch inside
-   it counts as activity and restores the hidden controls immediately. */
+/* Deliberately-open reading/navigation surfaces remain visible. */
 body.ss-nav-hotspots-idle #sceneList,
 body.ss-nav-hotspots-idle #sceneList .scenes,
-body.ss-nav-hotspots-idle #sceneList .scene {
+body.ss-nav-hotspots-idle #sceneList .scene,
+body.ss-nav-hotspots-idle .info-hotspot,
+body.ss-nav-hotspots-idle .info-hotspot-modal {
   opacity: 1 !important;
 }
 
@@ -1244,10 +1204,10 @@ body.ss-nav-hotspots-idle #sceneList .scene {
 .no-touch #autorotateToggle:hover { background:rgba(20,28,38,.06) !important; border-radius:8px; }
 
 /* Sky Surfer casual image-copy protection */
-#pano, #pano canvas, #pano img, .scene-preview-image {
+#pano, #pano canvas, #pano img, .ss-scene-preview-image {
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
 }
-#pano img, .scene-preview-image { -webkit-user-drag: none !important; user-drag: none !important; }
+#pano img, .ss-scene-preview-image { -webkit-user-drag: none !important; user-drag: none !important; }
 

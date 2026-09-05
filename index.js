@@ -361,54 +361,123 @@
     }
   });
 
-  // SKY SURFER: hide navigation arrows and tour controls after viewer inactivity.
+  // SKY SURFER v6.3: robust idle UI compatibility layer.
   var ssNavIdleDelay = 3000;
-  var ssNavLastActivity = Date.now();
   var ssNavIdleTimer = null;
 
   function ssNavApplyIdleState(isIdle) {
     if (!document.body) return;
-    if (isIdle) document.body.classList.add('ss-nav-hotspots-idle');
-    else document.body.classList.remove('ss-nav-hotspots-idle');
+    document.body.classList.toggle('ss-nav-hotspots-idle', !!isIdle);
   }
 
-  function ssNavIdleCheck() {
-    var elapsed = Date.now() - ssNavLastActivity;
-    var remaining = ssNavIdleDelay - elapsed;
-    if (remaining <= 0) {
-      ssNavApplyIdleState(true);
+  function ssNavScheduleHide() {
+    if (ssNavIdleTimer !== null) {
+      window.clearTimeout(ssNavIdleTimer);
+    }
+    ssNavIdleTimer = window.setTimeout(function() {
       ssNavIdleTimer = null;
-      return;
-    }
-    ssNavIdleTimer = window.setTimeout(ssNavIdleCheck, remaining);
+      ssNavApplyIdleState(true);
+    }, ssNavIdleDelay);
   }
 
-  function ssNavMarkActivity() {
-    ssNavLastActivity = Date.now();
+  function ssNavMarkActivity(event) {
+    // Ignore script-generated events. Only genuine visitor interaction should
+    // keep the interface awake indefinitely.
+    if (event && event.isTrusted === false) return;
     ssNavApplyIdleState(false);
-    if (!ssNavIdleTimer) {
-      ssNavIdleTimer = window.setTimeout(ssNavIdleCheck, ssNavIdleDelay);
+    ssNavScheduleHide();
+  }
+
+  function ssNavMarkIdleElement(element) {
+    if (!element || !element.classList) return;
+    // Deliberately-open content remains readable: scene list and information
+    // panels are not marked as idle chrome.
+    if (element.id === 'sceneList' ||
+        element.classList.contains('scenes') ||
+        element.classList.contains('scene') ||
+        element.classList.contains('info-hotspot') ||
+        element.classList.contains('info-hotspot-modal')) return;
+    element.classList.add('ss-idle-ui');
+  }
+
+  function ssNavCollectIdleElements(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var selectors = [
+      '.link-hotspot',
+      '#titleBar',
+      '#sceneListToggle',
+      '#autorotateToggle',
+      '#fullscreenToggle',
+      '.viewControlButton',
+      '#viewUp', '#viewDown', '#viewLeft', '#viewRight', '#viewIn', '#viewOut',
+      '.ss-audio-player',
+      '#player.player',
+      '.player#player'
+    ];
+
+    // Include the root itself when it matches; this matters for dynamically
+    // appended legacy controls such as the Joyful Mystery #player element.
+    if (root && root.matches) {
+      for (var r = 0; r < selectors.length; r++) {
+        try {
+          if (root.matches(selectors[r])) ssNavMarkIdleElement(root);
+        } catch (_) {}
+      }
+    }
+
+    for (var i = 0; i < selectors.length; i++) {
+      var found;
+      try { found = scope.querySelectorAll(selectors[i]); }
+      catch (_) { found = []; }
+      for (var j = 0; j < found.length; j++) ssNavMarkIdleElement(found[j]);
     }
   }
 
-  var ssNavActivityEvents = [
-    'pointermove', 'pointerdown',
-    'mousemove', 'mousedown',
-    'touchstart', 'touchmove',
-    'wheel', 'click', 'keydown',
-    'gesturestart', 'gesturechange'
-  ];
-  for (var ssNavEventIndex = 0; ssNavEventIndex < ssNavActivityEvents.length; ssNavEventIndex++) {
-    document.addEventListener(ssNavActivityEvents[ssNavEventIndex], ssNavMarkActivity, {
-      capture: true,
-      passive: true
-    });
-  }
-  window.addEventListener('resize', ssNavMarkActivity, { passive: true });
-  window.addEventListener('orientationchange', ssNavMarkActivity, { passive: true });
-  window.addEventListener('focus', ssNavMarkActivity, { passive: true });
+  // Mark controls that already exist.
+  ssNavCollectIdleElements(document);
 
-  // Start visible, then hide only after the configured idle period.
+  // Older customized projects sometimes append their own player or controls
+  // after Marzipano's main document. Observe new DOM nodes and mark recognized
+  // controls automatically instead of requiring a special-project checkbox.
+  if (window.MutationObserver && document.documentElement) {
+    var ssNavObserver = new MutationObserver(function(records) {
+      for (var i = 0; i < records.length; i++) {
+        for (var j = 0; j < records[i].addedNodes.length; j++) {
+          var node = records[i].addedNodes[j];
+          if (node && node.nodeType === 1) ssNavCollectIdleElements(node);
+        }
+      }
+    });
+    ssNavObserver.observe(document.documentElement, { childList:true, subtree:true });
+  }
+
+  var ssNavPassiveOptions = { capture:true, passive:true };
+  var ssNavActiveOptions = { capture:true };
+
+  // Pointer Events cover modern desktop + phone/tablet in one path.
+  if (window.PointerEvent) {
+    document.addEventListener('pointermove', ssNavMarkActivity, ssNavPassiveOptions);
+    document.addEventListener('pointerdown', ssNavMarkActivity, ssNavPassiveOptions);
+  } else {
+    document.addEventListener('mousemove', ssNavMarkActivity, ssNavPassiveOptions);
+    document.addEventListener('mousedown', ssNavMarkActivity, ssNavPassiveOptions);
+    document.addEventListener('touchstart', ssNavMarkActivity, ssNavPassiveOptions);
+    document.addEventListener('touchmove', ssNavMarkActivity, ssNavPassiveOptions);
+  }
+
+  document.addEventListener('wheel', ssNavMarkActivity, ssNavPassiveOptions);
+  document.addEventListener('click', ssNavMarkActivity, ssNavPassiveOptions);
+  document.addEventListener('keydown', ssNavMarkActivity, ssNavActiveOptions);
+  document.addEventListener('gesturestart', ssNavMarkActivity, ssNavPassiveOptions);
+  document.addEventListener('gesturechange', ssNavMarkActivity, ssNavPassiveOptions);
+
+  window.addEventListener('resize', ssNavMarkActivity, { passive:true });
+  window.addEventListener('orientationchange', ssNavMarkActivity, { passive:true });
+  document.addEventListener('visibilitychange', function(event) {
+    if (!document.hidden) ssNavMarkActivity(event);
+  }, { passive:true });
+
+  // Start visible, then restart the full delay after every genuine interaction.
   ssNavMarkActivity();
 
   function createLinkHotspotElement(hotspot) {
@@ -458,24 +527,28 @@
     // This prevents the view control logic from interfering with the hotspot.
     stopTouchAndScrollEventPropagation(wrapper);
 
-    // Create destination preview tooltip.
+    // SKY SURFER: isolated destination preview. This intentionally does NOT
+    // reuse Marzipano's .link-hotspot-tooltip class so older/custom project CSS
+    // cannot crop, resize, or distort the 16:9 destination card.
     var tooltip = document.createElement('div');
-    tooltip.classList.add('hotspot-tooltip');
-    tooltip.classList.add('link-hotspot-tooltip');
-    tooltip.classList.add('scene-preview-tooltip');
+    tooltip.classList.add('ss-scene-preview-anchor');
 
     var targetScene = findSceneDataById(hotspot.target);
 
+    var previewCard = document.createElement('div');
+    previewCard.classList.add('ss-scene-preview-card');
+
     var previewImage = document.createElement('img');
-    previewImage.classList.add('scene-preview-image');
+    previewImage.classList.add('ss-scene-preview-image');
     previewImage.src = 'thumbnails/' + hotspot.target + '.jpg';
     previewImage.alt = targetScene.name;
     var previewTitle = document.createElement('div');
-    previewTitle.classList.add('scene-preview-title');
-    previewTitle.innerHTML = targetScene.name;
+    previewTitle.classList.add('ss-scene-preview-title');
+    previewTitle.textContent = targetScene.name;
 
-    tooltip.appendChild(previewImage);
-    tooltip.appendChild(previewTitle);
+    previewCard.appendChild(previewImage);
+    previewCard.appendChild(previewTitle);
+    tooltip.appendChild(previewCard);
 
     wrapper.appendChild(icon);
     wrapper.appendChild(tooltip);
