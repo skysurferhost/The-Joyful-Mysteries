@@ -1076,7 +1076,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Sky Surfer v6.3 robust idle interface.
+/* Sky Surfer v6.4 robust idle interface.
    Runtime JS marks standard and recognized legacy/custom controls with
    .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
 .ss-idle-ui {
@@ -1087,6 +1087,13 @@ body.view-control-buttons .viewControlButton { display: block; }
 body.ss-nav-hotspots-idle .ss-idle-ui {
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/* Desktop pointer also disappears during the idle presentation state.
+   A genuine pointer move immediately removes the idle class and restores it. */
+body.ss-nav-hotspots-idle,
+body.ss-nav-hotspots-idle * {
+  cursor: none !important;
 }
 
 /* Deliberately-open reading/navigation surfaces remain visible. */
