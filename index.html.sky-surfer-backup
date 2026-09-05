@@ -7,12 +7,6 @@
 <style> @-ms-viewport { width: device-width; } </style>
 <link rel="stylesheet" href="vendor/reset.min.css">
 <link rel="stylesheet" href="style.css">
-
-  <!-- SKY_SURFER_CONTENT_RIGHTS_V1
-       © 2026 Sky Surfer. Original Sky Surfer imagery/media: All Rights Reserved.
-       Marzipano and third-party components retain their respective original licenses/notices.
-  -->
-  <meta name="robots" content="noimageindex">
 </head>
 <body class="multiple-scenes view-control-buttons">
 
