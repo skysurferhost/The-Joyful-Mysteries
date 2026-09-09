@@ -350,7 +350,7 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V6_7
+  // SKY_SURFER_TOOLS_BUILD_V6_8
   // SKY_SURFER_PREVIEW_ENHANCER_V33
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
   document.addEventListener('click', function() {
@@ -360,7 +360,7 @@
     }
   });
 
-  // SKY SURFER v6.7: deterministic idle UI monitor.
+  // SKY SURFER v6.8: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
   var ssNavLastActivityAt = Date.now();
   var ssNavIdleState = false;
@@ -372,12 +372,7 @@
     if (!document.body) return;
     ssNavIdleState = !!isIdle;
     document.body.classList.toggle('ss-nav-hotspots-idle', ssNavIdleState);
-    if (ssNavIdleState) {
-      var desktopPreviews = document.querySelectorAll('.link-hotspot.ss-desktop-preview-visible');
-      for (var i = 0; i < desktopPreviews.length; i++) {
-        desktopPreviews[i].classList.remove('ss-desktop-preview-visible');
-      }
-    }
+    // Desktop previews are native CSS :hover, so no persistent preview class needs cleanup.
   }
 
   function ssNavRecordActivity() {
@@ -565,69 +560,9 @@
       switchScene(findSceneById(hotspot.target));
     });
 
-    // Desktop hover intent: only real mouse movement can arm the preview.
-    // This prevents an autorotating/moving hotspot from revealing itself simply
-    // because it passes under a stationary desktop cursor.
-    var ssPreviewHoverTimer = null;
-    var ssPreviewLastMouseX = null;
-    var ssPreviewLastMouseY = null;
-
-    function ssPreviewCancelDesktop() {
-      if (ssPreviewHoverTimer !== null) {
-        window.clearTimeout(ssPreviewHoverTimer);
-        ssPreviewHoverTimer = null;
-      }
-      wrapper.classList.remove('ss-desktop-preview-visible');
-    }
-
-    wrapper.addEventListener('mousemove', function(event) {
-      var touchLike = document.body.classList.contains('touch') ||
-                      document.body.classList.contains('mobile') ||
-                      (window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches);
-      if (touchLike || !event || event.isTrusted === false) return;
-      if (typeof event.buttons === 'number' && event.buttons !== 0) { ssPreviewCancelDesktop(); return; }
-
-      var x = Number(event.clientX);
-      var y = Number(event.clientY);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-
-      var dx = 0;
-      var dy = 0;
-      if (typeof event.movementX === 'number' && typeof event.movementY === 'number') {
-        dx = event.movementX;
-        dy = event.movementY;
-      } else if (ssPreviewLastMouseX !== null && ssPreviewLastMouseY !== null) {
-        dx = x - ssPreviewLastMouseX;
-        dy = y - ssPreviewLastMouseY;
-      }
-      ssPreviewLastMouseX = x;
-      ssPreviewLastMouseY = y;
-
-      // Ignore zero-distance and tiny jitter events caused by layout/hotspot movement.
-      if (Math.hypot(dx, dy) < 2) return;
-
-      if (ssPreviewHoverTimer === null && !wrapper.classList.contains('ss-desktop-preview-visible')) {
-        ssPreviewHoverTimer = window.setTimeout(function() {
-          ssPreviewHoverTimer = null;
-          if (!wrapper.matches(':hover')) return;
-          var desktopOpen = document.querySelectorAll('.link-hotspot.ss-desktop-preview-visible');
-          for (var d = 0; d < desktopOpen.length; d++) {
-            if (desktopOpen[d] !== wrapper) desktopOpen[d].classList.remove('ss-desktop-preview-visible');
-          }
-          wrapper.classList.add('ss-desktop-preview-visible');
-        }, 140);
-      }
-    });
-
-    wrapper.addEventListener('mouseleave', function() {
-      ssPreviewCancelDesktop();
-      ssPreviewLastMouseX = null;
-      ssPreviewLastMouseY = null;
-    });
-
-    wrapper.addEventListener('mousedown', function() {
-      ssPreviewCancelDesktop();
-    });
+    // Desktop preview uses native CSS :hover only, matching the working
+    // St. Matthew tour. No persistent desktop preview class is set by JS.
+    // This means the preview disappears automatically when the hotspot is no longer hovered.
 
     // Prevent touch and scroll events from reaching the parent element.
     // This prevents the view control logic from interfering with the hotspot.
