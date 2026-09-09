@@ -350,7 +350,8 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V6_6\n  // SKY_SURFER_PREVIEW_ENHANCER_V33
+  // SKY_SURFER_TOOLS_BUILD_V6_7
+  // SKY_SURFER_PREVIEW_ENHANCER_V33
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
   document.addEventListener('click', function() {
     var openPreviews = document.querySelectorAll('.link-hotspot.preview-visible');
@@ -359,16 +360,19 @@
     }
   });
 
-  // SKY SURFER v6.6: robust idle UI compatibility layer.
+  // SKY SURFER v6.7: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
-  var ssNavIdleTimer = null;
+  var ssNavLastActivityAt = Date.now();
+  var ssNavIdleState = false;
   var ssNavLastPointerX = null;
   var ssNavLastPointerY = null;
+  var ssNavMoveAccumulator = 0;
 
   function ssNavApplyIdleState(isIdle) {
     if (!document.body) return;
-    document.body.classList.toggle('ss-nav-hotspots-idle', !!isIdle);
-    if (isIdle) {
+    ssNavIdleState = !!isIdle;
+    document.body.classList.toggle('ss-nav-hotspots-idle', ssNavIdleState);
+    if (ssNavIdleState) {
       var desktopPreviews = document.querySelectorAll('.link-hotspot.ss-desktop-preview-visible');
       for (var i = 0; i < desktopPreviews.length; i++) {
         desktopPreviews[i].classList.remove('ss-desktop-preview-visible');
@@ -376,17 +380,13 @@
     }
   }
 
-  function ssNavScheduleHide() {
-    if (ssNavIdleTimer !== null) {
-      window.clearTimeout(ssNavIdleTimer);
-    }
-    ssNavIdleTimer = window.setTimeout(function() {
-      ssNavIdleTimer = null;
-      ssNavApplyIdleState(true);
-    }, ssNavIdleDelay);
+  function ssNavRecordActivity() {
+    ssNavLastActivityAt = Date.now();
+    ssNavMoveAccumulator = 0;
+    if (ssNavIdleState) ssNavApplyIdleState(false);
   }
 
-  function ssNavPointerCoordinates(event) {
+  function ssNavPointerPoint(event) {
     if (!event) return null;
     if (event.touches && event.touches.length) {
       return { x:Number(event.touches[0].clientX), y:Number(event.touches[0].clientY) };
@@ -400,48 +400,49 @@
     return null;
   }
 
-  function ssNavStorePointer(event) {
-    var point = ssNavPointerCoordinates(event);
-    if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
-    ssNavLastPointerX = point.x;
-    ssNavLastPointerY = point.y;
-  }
+  function ssNavHandleMove(event) {
+    if (!event || event.isTrusted === false) return;
 
-  function ssNavMarkActivity(event) {
-    // Ignore script-generated events. Only genuine visitor interaction should
-    // keep the interface awake indefinitely.
-    if (event && event.isTrusted === false) return;
-
-    var type = event && event.type ? event.type : '';
-
-    // A moving 360 hotspot underneath a stationary cursor can cause target
-    // updates at identical coordinates. Those are not real visitor activity.
-    if (type === 'pointermove' || type === 'mousemove' || type === 'touchmove') {
-      var point = ssNavPointerCoordinates(event);
-      if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
-
-      if (ssNavLastPointerX === null || ssNavLastPointerY === null) {
-        ssNavLastPointerX = point.x;
-        ssNavLastPointerY = point.y;
-        return;
-      }
-
-      var actuallyMoved = (point.x !== ssNavLastPointerX || point.y !== ssNavLastPointerY);
-      ssNavLastPointerX = point.x;
-      ssNavLastPointerY = point.y;
-      if (!actuallyMoved) return;
-    } else if (type === 'pointerdown' || type === 'mousedown' || type === 'touchstart') {
-      ssNavStorePointer(event);
+    var dx = 0;
+    var dy = 0;
+    if (typeof event.movementX === 'number' && typeof event.movementY === 'number') {
+      dx = event.movementX;
+      dy = event.movementY;
     }
 
-    ssNavApplyIdleState(false);
-    ssNavScheduleHide();
+    var point = ssNavPointerPoint(event);
+    if ((!dx && !dy) && point && Number.isFinite(point.x) && Number.isFinite(point.y) &&
+        ssNavLastPointerX !== null && ssNavLastPointerY !== null) {
+      dx = point.x - ssNavLastPointerX;
+      dy = point.y - ssNavLastPointerY;
+    }
+
+    if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+      ssNavLastPointerX = point.x;
+      ssNavLastPointerY = point.y;
+    }
+
+    var distance = Math.hypot(dx, dy);
+    if (!Number.isFinite(distance) || distance <= 0) return;
+
+    // Require a few pixels of accumulated physical pointer motion. This ignores
+    // stationary-cursor target changes and tiny rendering/layout jitter.
+    ssNavMoveAccumulator += distance;
+    if (ssNavMoveAccumulator >= 3) ssNavRecordActivity();
+  }
+
+  function ssNavHandleImmediateActivity(event) {
+    if (event && event.isTrusted === false) return;
+    var point = ssNavPointerPoint(event);
+    if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+      ssNavLastPointerX = point.x;
+      ssNavLastPointerY = point.y;
+    }
+    ssNavRecordActivity();
   }
 
   function ssNavMarkIdleElement(element) {
     if (!element || !element.classList) return;
-    // Deliberately-open content remains readable: scene list and information
-    // panels are not marked as idle chrome.
     if (element.id === 'sceneList' ||
         element.classList.contains('scenes') ||
         element.classList.contains('scene') ||
@@ -465,8 +466,6 @@
       '.player#player'
     ];
 
-    // Include the root itself when it matches; this matters for dynamically
-    // appended legacy controls such as the Joyful Mystery #player element.
     if (root && root.matches) {
       for (var r = 0; r < selectors.length; r++) {
         try {
@@ -483,12 +482,8 @@
     }
   }
 
-  // Mark controls that already exist.
   ssNavCollectIdleElements(document);
 
-  // Older customized projects sometimes append their own player or controls
-  // after Marzipano's main document. Observe new DOM nodes and mark recognized
-  // controls automatically instead of requiring a special-project checkbox.
   if (window.MutationObserver && document.documentElement) {
     var ssNavObserver = new MutationObserver(function(records) {
       for (var i = 0; i < records.length; i++) {
@@ -504,31 +499,28 @@
   var ssNavPassiveOptions = { capture:true, passive:true };
   var ssNavActiveOptions = { capture:true };
 
-  // Pointer Events cover modern desktop + phone/tablet in one path.
   if (window.PointerEvent) {
-    document.addEventListener('pointermove', ssNavMarkActivity, ssNavPassiveOptions);
-    document.addEventListener('pointerdown', ssNavMarkActivity, ssNavPassiveOptions);
+    document.addEventListener('pointermove', ssNavHandleMove, ssNavPassiveOptions);
+    document.addEventListener('pointerdown', ssNavHandleImmediateActivity, ssNavPassiveOptions);
   } else {
-    document.addEventListener('mousemove', ssNavMarkActivity, ssNavPassiveOptions);
-    document.addEventListener('mousedown', ssNavMarkActivity, ssNavPassiveOptions);
-    document.addEventListener('touchstart', ssNavMarkActivity, ssNavPassiveOptions);
-    document.addEventListener('touchmove', ssNavMarkActivity, ssNavPassiveOptions);
+    document.addEventListener('mousemove', ssNavHandleMove, ssNavPassiveOptions);
+    document.addEventListener('mousedown', ssNavHandleImmediateActivity, ssNavPassiveOptions);
+    document.addEventListener('touchstart', ssNavHandleImmediateActivity, ssNavPassiveOptions);
+    document.addEventListener('touchmove', ssNavHandleMove, ssNavPassiveOptions);
   }
 
-  document.addEventListener('wheel', ssNavMarkActivity, ssNavPassiveOptions);
-  document.addEventListener('click', ssNavMarkActivity, ssNavPassiveOptions);
-  document.addEventListener('keydown', ssNavMarkActivity, ssNavActiveOptions);
-  document.addEventListener('gesturestart', ssNavMarkActivity, ssNavPassiveOptions);
-  document.addEventListener('gesturechange', ssNavMarkActivity, ssNavPassiveOptions);
+  document.addEventListener('wheel', ssNavHandleImmediateActivity, ssNavPassiveOptions);
+  document.addEventListener('click', ssNavHandleImmediateActivity, ssNavPassiveOptions);
+  document.addEventListener('keydown', ssNavHandleImmediateActivity, ssNavActiveOptions);
+  document.addEventListener('gesturestart', ssNavHandleImmediateActivity, ssNavPassiveOptions);
+  document.addEventListener('gesturechange', ssNavHandleImmediateActivity, ssNavPassiveOptions);
 
-  window.addEventListener('resize', ssNavMarkActivity, { passive:true });
-  window.addEventListener('orientationchange', ssNavMarkActivity, { passive:true });
-  document.addEventListener('visibilitychange', function(event) {
-    if (!document.hidden) ssNavMarkActivity(event);
-  }, { passive:true });
-
-  // Start visible, then restart the full delay after every genuine interaction.
-  ssNavMarkActivity();
+  // Do not treat resize, orientation, focus, visibility, or autorotation as visitor
+  // interaction. Only actual user input should keep the controls awake.
+  window.setInterval(function() {
+    var shouldBeIdle = (Date.now() - ssNavLastActivityAt) >= ssNavIdleDelay;
+    if (shouldBeIdle !== ssNavIdleState) ssNavApplyIdleState(shouldBeIdle);
+  }, 200);
 
   function createLinkHotspotElement(hotspot) {
 
@@ -573,53 +565,68 @@
       switchScene(findSceneById(hotspot.target));
     });
 
-    // Desktop preview intent: only genuine pointer-coordinate movement may reveal the preview.
-    // A moving/autorotating hotspot can pass under a stationary mouse and some browsers may
-    // dispatch mousemove/target updates at the same coordinates. Those must be ignored.
+    // Desktop hover intent: only real mouse movement can arm the preview.
+    // This prevents an autorotating/moving hotspot from revealing itself simply
+    // because it passes under a stationary desktop cursor.
+    var ssPreviewHoverTimer = null;
     var ssPreviewLastMouseX = null;
     var ssPreviewLastMouseY = null;
+
+    function ssPreviewCancelDesktop() {
+      if (ssPreviewHoverTimer !== null) {
+        window.clearTimeout(ssPreviewHoverTimer);
+        ssPreviewHoverTimer = null;
+      }
+      wrapper.classList.remove('ss-desktop-preview-visible');
+    }
 
     wrapper.addEventListener('mousemove', function(event) {
       var touchLike = document.body.classList.contains('touch') ||
                       document.body.classList.contains('mobile') ||
                       (window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches);
       if (touchLike || !event || event.isTrusted === false) return;
+      if (typeof event.buttons === 'number' && event.buttons !== 0) { ssPreviewCancelDesktop(); return; }
 
       var x = Number(event.clientX);
       var y = Number(event.clientY);
       if (!Number.isFinite(x) || !Number.isFinite(y)) return;
 
-      if (ssPreviewLastMouseX === null || ssPreviewLastMouseY === null) {
-        ssPreviewLastMouseX = x;
-        ssPreviewLastMouseY = y;
-        return;
+      var dx = 0;
+      var dy = 0;
+      if (typeof event.movementX === 'number' && typeof event.movementY === 'number') {
+        dx = event.movementX;
+        dy = event.movementY;
+      } else if (ssPreviewLastMouseX !== null && ssPreviewLastMouseY !== null) {
+        dx = x - ssPreviewLastMouseX;
+        dy = y - ssPreviewLastMouseY;
       }
-
-      var actuallyMoved = (x !== ssPreviewLastMouseX || y !== ssPreviewLastMouseY);
       ssPreviewLastMouseX = x;
       ssPreviewLastMouseY = y;
-      if (!actuallyMoved) return;
 
-      if (typeof event.buttons === 'number' && event.buttons !== 0) {
-        wrapper.classList.remove('ss-desktop-preview-visible');
-        return;
-      }
+      // Ignore zero-distance and tiny jitter events caused by layout/hotspot movement.
+      if (Math.hypot(dx, dy) < 2) return;
 
-      var desktopOpen = document.querySelectorAll('.link-hotspot.ss-desktop-preview-visible');
-      for (var d = 0; d < desktopOpen.length; d++) {
-        if (desktopOpen[d] !== wrapper) desktopOpen[d].classList.remove('ss-desktop-preview-visible');
+      if (ssPreviewHoverTimer === null && !wrapper.classList.contains('ss-desktop-preview-visible')) {
+        ssPreviewHoverTimer = window.setTimeout(function() {
+          ssPreviewHoverTimer = null;
+          if (!wrapper.matches(':hover')) return;
+          var desktopOpen = document.querySelectorAll('.link-hotspot.ss-desktop-preview-visible');
+          for (var d = 0; d < desktopOpen.length; d++) {
+            if (desktopOpen[d] !== wrapper) desktopOpen[d].classList.remove('ss-desktop-preview-visible');
+          }
+          wrapper.classList.add('ss-desktop-preview-visible');
+        }, 140);
       }
-      wrapper.classList.add('ss-desktop-preview-visible');
     });
 
     wrapper.addEventListener('mouseleave', function() {
-      wrapper.classList.remove('ss-desktop-preview-visible');
+      ssPreviewCancelDesktop();
       ssPreviewLastMouseX = null;
       ssPreviewLastMouseY = null;
     });
 
     wrapper.addEventListener('mousedown', function() {
-      wrapper.classList.remove('ss-desktop-preview-visible');
+      ssPreviewCancelDesktop();
     });
 
     // Prevent touch and scroll events from reaching the parent element.
@@ -647,6 +654,11 @@
 
     previewCard.appendChild(previewImage);
     previewCard.appendChild(previewTitle);
+    previewCard.addEventListener('click', function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      switchScene(findSceneById(hotspot.target));
+    });
     tooltip.appendChild(previewCard);
 
     wrapper.appendChild(icon);

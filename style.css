@@ -838,7 +838,7 @@ body.view-control-buttons .viewControlButton { display: block; }
   }
 
 
-/* SKY_SURFER_TOOLS_BUILD_V6_6 */
+/* SKY_SURFER_TOOLS_BUILD_V6_7 */
 /* ================================================================
    SKY_SURFER_PREVIEW_ENHANCER_V33
    Isolated Sky Surfer destination preview.
@@ -943,6 +943,8 @@ body.view-control-buttons .viewControlButton { display: block; }
 .link-hotspot.ss-desktop-preview-visible .ss-scene-preview-card {
   opacity: 1 !important;
   visibility: visible !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
   -ms-transform: translateX(0);
   -webkit-transform: translateX(0);
   transform: translateX(0);
@@ -956,6 +958,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 .mobile .link-hotspot.preview-visible .ss-scene-preview-card {
   opacity: 1 !important;
   visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -981,6 +984,7 @@ body.view-control-buttons .viewControlButton { display: block; }
   .link-hotspot.preview-visible .ss-scene-preview-card {
     opacity: 1 !important;
     visibility: visible !important;
+    pointer-events: auto !important;
     -ms-transform: translateY(0);
     -webkit-transform: translateY(0);
     transform: translateY(0);
@@ -1082,7 +1086,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Sky Surfer v6.6 robust idle interface.
+/* Sky Surfer v6.7 robust idle interface.
    Runtime JS marks standard and recognized legacy/custom controls with
    .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
 .ss-idle-ui {
