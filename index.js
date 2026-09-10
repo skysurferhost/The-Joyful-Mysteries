@@ -350,7 +350,7 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V7_2
+  // SKY_SURFER_TOOLS_BUILD_V7_3
   // SKY_SURFER_PREVIEW_ENHANCER_V33
   // SKY_SURFER_SPECIAL_PREVIEW_MODE=ON
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
@@ -361,7 +361,7 @@
     }
   });
 
-  // SKY SURFER v7.2 special legacy/custom desktop preview compatibility.
+  // SKY SURFER v7.3 special legacy/custom desktop preview compatibility.
   // IMPORTANT: only a genuine physical desktop mouse movement can open a preview.
   // Mark the document so CSS can explicitly disable ordinary :hover behavior.
   document.body.classList.add('ss-special-preview-mode');
@@ -481,7 +481,7 @@
 
   window.addEventListener('blur', ssSpecialPreviewHideActive, { passive:true });
 
-  // SKY SURFER v7.2: deterministic idle UI monitor.
+  // SKY SURFER v7.3: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
   var ssNavLastActivityAt = Date.now();
   var ssNavIdleState = false;
@@ -681,6 +681,7 @@
       switchScene(findSceneById(hotspot.target));
     });
 
+
     // Prevent touch and scroll events from reaching the parent element.
     // This prevents the view control logic from interfering with the hotspot.
     stopTouchAndScrollEventPropagation(wrapper);
@@ -706,6 +707,22 @@
 
     previewCard.appendChild(previewImage);
     previewCard.appendChild(previewTitle);
+    previewCard.addEventListener('mouseenter', function() {
+      if (wrapper.classList.contains('ss-standard-preview-visible')) {
+        if (typeof ssStandardPreviewHideTimer !== 'undefined' && ssStandardPreviewHideTimer !== null) {
+          window.clearTimeout(ssStandardPreviewHideTimer);
+          ssStandardPreviewHideTimer = null;
+        }
+      }
+    });
+
+    previewCard.addEventListener('mouseleave', function() {
+      if (wrapper.classList.contains('ss-standard-preview-visible') &&
+          typeof ssStandardPreviewScheduleHide === 'function') {
+        ssStandardPreviewScheduleHide();
+      }
+    });
+
     previewCard.addEventListener('click', function(event) {
       event.preventDefault();
       event.stopPropagation();
