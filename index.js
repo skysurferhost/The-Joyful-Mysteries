@@ -350,7 +350,7 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V7_0
+  // SKY_SURFER_TOOLS_BUILD_V7_1
   // SKY_SURFER_PREVIEW_ENHANCER_V33
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
   document.addEventListener('click', function() {
@@ -360,19 +360,89 @@
     }
   });
 
-  // SKY SURFER special legacy/custom desktop preview compatibility.
-  // Track genuine physical mouse movement. A transformed hotspot moving under
-  // a stationary cursor does not update this timestamp.
+  // SKY SURFER v7.1 special legacy/custom desktop preview compatibility.
+  // IMPORTANT: only a genuine physical desktop mouse movement can open a preview.
+  // Hotspot mouseenter/mouseover/:hover are deliberately NOT used in this mode,
+  // because an autorotating panorama can move a hotspot underneath a stationary cursor.
   var ssSpecialPreviewPointerX = null;
   var ssSpecialPreviewPointerY = null;
-  var ssSpecialPreviewLastRealMoveAt = 0;
+  var ssSpecialPreviewActiveHotspot = null;
+  var ssSpecialPreviewWatchFrame = 0;
+
+  function ssSpecialPreviewIsDesktop() {
+    return document.body.classList.contains('no-touch') &&
+           !(window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches);
+  }
+
+  function ssSpecialPreviewHideActive() {
+    if (ssSpecialPreviewActiveHotspot) {
+      ssSpecialPreviewActiveHotspot.classList.remove('ss-special-preview-visible');
+      ssSpecialPreviewActiveHotspot = null;
+    }
+  }
+
+  function ssSpecialPreviewHotspotAt(x, y) {
+    var element = document.elementFromPoint(x, y);
+    if (!element || !element.closest) return null;
+    return element.closest('.link-hotspot');
+  }
+
+  function ssSpecialPreviewSetActive(hotspot) {
+    if (ssSpecialPreviewActiveHotspot === hotspot) return;
+
+    if (ssSpecialPreviewActiveHotspot) {
+      ssSpecialPreviewActiveHotspot.classList.remove('ss-special-preview-visible');
+    }
+
+    ssSpecialPreviewActiveHotspot = hotspot || null;
+
+    if (ssSpecialPreviewActiveHotspot) {
+      ssSpecialPreviewActiveHotspot.classList.add('ss-special-preview-visible');
+    }
+  }
+
+  function ssSpecialPreviewWatchPointer() {
+    if (!ssSpecialPreviewActiveHotspot) {
+      ssSpecialPreviewWatchFrame = 0;
+      return;
+    }
+
+    if (ssSpecialPreviewPointerX === null || ssSpecialPreviewPointerY === null) {
+      ssSpecialPreviewHideActive();
+      ssSpecialPreviewWatchFrame = 0;
+      return;
+    }
+
+    // This watchdog is what closes the preview when autorotation moves the
+    // hotspot away from a stationary mouse. No mouse event is required.
+    var hotspotNow = ssSpecialPreviewHotspotAt(
+      ssSpecialPreviewPointerX,
+      ssSpecialPreviewPointerY
+    );
+
+    if (hotspotNow !== ssSpecialPreviewActiveHotspot) {
+      ssSpecialPreviewHideActive();
+      ssSpecialPreviewWatchFrame = 0;
+      return;
+    }
+
+    ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
+  }
 
   document.addEventListener('mousemove', function(event) {
+    if (!ssSpecialPreviewIsDesktop()) return;
     if (!event || event.isTrusted === false) return;
+    if (typeof event.buttons === 'number' && event.buttons !== 0) {
+      ssSpecialPreviewHideActive();
+      return;
+    }
+
     var x = Number(event.clientX);
     var y = Number(event.clientY);
     if (!Number.isFinite(x) || !Number.isFinite(y)) return;
 
+    // The first event only establishes a baseline. This prevents a page load,
+    // focus change, or synthetic target update from revealing a preview.
     if (ssSpecialPreviewPointerX === null || ssSpecialPreviewPointerY === null) {
       ssSpecialPreviewPointerX = x;
       ssSpecialPreviewPointerY = y;
@@ -384,12 +454,25 @@
     ssSpecialPreviewPointerX = x;
     ssSpecialPreviewPointerY = y;
 
-    if (Math.hypot(dx, dy) >= 2) {
-      ssSpecialPreviewLastRealMoveAt = Date.now();
+    // Require actual physical cursor travel. A hotspot moving under a stationary
+    // mouse has zero pointer travel and therefore cannot activate the preview.
+    if (Math.hypot(dx, dy) < 2) return;
+
+    var hotspot = ssSpecialPreviewHotspotAt(x, y);
+    ssSpecialPreviewSetActive(hotspot);
+
+    if (ssSpecialPreviewActiveHotspot && !ssSpecialPreviewWatchFrame) {
+      ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
     }
   }, { capture:true, passive:true });
 
-  // SKY SURFER v7.0: deterministic idle UI monitor.
+  document.addEventListener('mousedown', function() {
+    ssSpecialPreviewHideActive();
+  }, { capture:true, passive:true });
+
+  window.addEventListener('blur', ssSpecialPreviewHideActive, { passive:true });
+
+  // SKY SURFER v7.1: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
   var ssNavLastActivityAt = Date.now();
   var ssNavIdleState = false;
@@ -588,66 +671,6 @@
 
       switchScene(findSceneById(hotspot.target));
     });
-
-    // Special legacy/custom desktop preview mode:
-    // reveal only after recent genuine physical mouse movement. This prevents
-    // autorotation or CSS-transformed hotspots from revealing themselves under
-    // a stationary cursor.
-    var ssSpecialPreviewWatchFrame = 0;
-
-    function ssSpecialPreviewHide() {
-      wrapper.classList.remove('ss-special-preview-visible');
-      if (ssSpecialPreviewWatchFrame) {
-        window.cancelAnimationFrame(ssSpecialPreviewWatchFrame);
-        ssSpecialPreviewWatchFrame = 0;
-      }
-    }
-
-    function ssSpecialPreviewWatchPointer() {
-      if (!wrapper.classList.contains('ss-special-preview-visible')) {
-        ssSpecialPreviewWatchFrame = 0;
-        return;
-      }
-
-      if (ssSpecialPreviewPointerX === null || ssSpecialPreviewPointerY === null) {
-        ssSpecialPreviewHide();
-        return;
-      }
-
-      var topElement = document.elementFromPoint(ssSpecialPreviewPointerX, ssSpecialPreviewPointerY);
-      if (!topElement || !wrapper.contains(topElement)) {
-        ssSpecialPreviewHide();
-        return;
-      }
-
-      ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
-    }
-
-    function ssSpecialPreviewTryShow() {
-      var desktopLike = document.body.classList.contains('no-touch') &&
-                        !(window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches);
-      if (!desktopLike) return;
-
-      // Keep the intent window deliberately short. A hotspot that simply moves
-      // underneath a stationary cursor cannot satisfy this condition.
-      if ((Date.now() - ssSpecialPreviewLastRealMoveAt) > 140) return;
-
-      if (!wrapper.classList.contains('ss-special-preview-visible')) {
-        var specialOpen = document.querySelectorAll('.link-hotspot.ss-special-preview-visible');
-        for (var s = 0; s < specialOpen.length; s++) {
-          if (specialOpen[s] !== wrapper) specialOpen[s].classList.remove('ss-special-preview-visible');
-        }
-        wrapper.classList.add('ss-special-preview-visible');
-        if (!ssSpecialPreviewWatchFrame) {
-          ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
-        }
-      }
-    }
-
-    wrapper.addEventListener('mouseenter', ssSpecialPreviewTryShow);
-    wrapper.addEventListener('mousemove', ssSpecialPreviewTryShow);
-    wrapper.addEventListener('mouseleave', ssSpecialPreviewHide);
-
 
     // Prevent touch and scroll events from reaching the parent element.
     // This prevents the view control logic from interfering with the hotspot.
