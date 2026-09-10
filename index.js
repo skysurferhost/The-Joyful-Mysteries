@@ -350,7 +350,7 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V7_3
+  // SKY_SURFER_TOOLS_BUILD_V7_4
   // SKY_SURFER_PREVIEW_ENHANCER_V33
   // SKY_SURFER_SPECIAL_PREVIEW_MODE=ON
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
@@ -361,7 +361,7 @@
     }
   });
 
-  // SKY SURFER v7.3 special legacy/custom desktop preview compatibility.
+  // SKY SURFER v7.4 special legacy/custom desktop preview compatibility.
   // IMPORTANT: only a genuine physical desktop mouse movement can open a preview.
   // Mark the document so CSS can explicitly disable ordinary :hover behavior.
   document.body.classList.add('ss-special-preview-mode');
@@ -384,10 +384,31 @@
     }
   }
 
-  function ssSpecialPreviewHotspotAt(x, y) {
+  function ssSpecialPreviewActivationHotspotAt(x, y) {
     var element = document.elementFromPoint(x, y);
     if (!element || !element.closest) return null;
-    return element.closest('.link-hotspot');
+
+    var icon = element.closest('.link-hotspot-icon');
+    return icon ? icon.closest('.link-hotspot') : null;
+  }
+
+  function ssSpecialPreviewStillOwnsPointer(x, y) {
+    if (!ssSpecialPreviewActiveHotspot) return false;
+
+    var element = document.elementFromPoint(x, y);
+    if (!element || !element.closest) return false;
+
+    var icon = element.closest('.link-hotspot-icon');
+    if (icon && icon.closest('.link-hotspot') === ssSpecialPreviewActiveHotspot) {
+      return true;
+    }
+
+    var card = element.closest('.ss-scene-preview-card');
+    if (card && ssSpecialPreviewActiveHotspot.contains(card)) {
+      return true;
+    }
+
+    return false;
   }
 
   function ssSpecialPreviewSetActive(hotspot) {
@@ -418,12 +439,10 @@
 
     // This watchdog is what closes the preview when autorotation moves the
     // hotspot away from a stationary mouse. No mouse event is required.
-    var hotspotNow = ssSpecialPreviewHotspotAt(
+    if (!ssSpecialPreviewStillOwnsPointer(
       ssSpecialPreviewPointerX,
       ssSpecialPreviewPointerY
-    );
-
-    if (hotspotNow !== ssSpecialPreviewActiveHotspot) {
+    )) {
       ssSpecialPreviewHideActive();
       ssSpecialPreviewWatchFrame = 0;
       return;
@@ -461,7 +480,7 @@
     // mouse has zero pointer travel and therefore cannot activate the preview.
     if (Math.hypot(dx, dy) < 2) return;
 
-    var hotspot = ssSpecialPreviewHotspotAt(x, y);
+    var hotspot = ssSpecialPreviewActivationHotspotAt(x, y);
     ssSpecialPreviewSetActive(hotspot);
 
     if (ssSpecialPreviewActiveHotspot && !ssSpecialPreviewWatchFrame) {
@@ -481,7 +500,7 @@
 
   window.addEventListener('blur', ssSpecialPreviewHideActive, { passive:true });
 
-  // SKY SURFER v7.3: deterministic idle UI monitor.
+  // SKY SURFER v7.4: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
   var ssNavLastActivityAt = Date.now();
   var ssNavIdleState = false;
