@@ -350,8 +350,9 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V7_4
+  // SKY_SURFER_TOOLS_BUILD_V7_5
   // SKY_SURFER_PREVIEW_ENHANCER_V33
+  // SKY_SURFER_PROJECT_COMPATIBILITY=AUTO_SPECIAL
   // SKY_SURFER_SPECIAL_PREVIEW_MODE=ON
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
   document.addEventListener('click', function() {
@@ -361,20 +362,37 @@
     }
   });
 
-  // SKY SURFER v7.4 special legacy/custom desktop preview compatibility.
-  // IMPORTANT: only a genuine physical desktop mouse movement can open a preview.
-  // Mark the document so CSS can explicitly disable ordinary :hover behavior.
+  // SKY SURFER v7.5 automatic legacy/custom desktop preview compatibility.
   document.body.classList.add('ss-special-preview-mode');
-  // Hotspot mouseenter/mouseover/:hover are deliberately NOT used in this mode,
-  // because an autorotating panorama can move a hotspot underneath a stationary cursor.
+
   var ssSpecialPreviewPointerX = null;
   var ssSpecialPreviewPointerY = null;
+  var ssSpecialPreviewLastX = null;
+  var ssSpecialPreviewLastY = null;
+  var ssSpecialPreviewCandidate = null;
+  var ssSpecialPreviewCandidateTimer = null;
   var ssSpecialPreviewActiveHotspot = null;
   var ssSpecialPreviewWatchFrame = 0;
+  var ssSpecialPreviewPausedAutorotate = false;
 
   function ssSpecialPreviewIsDesktop() {
     return document.body.classList.contains('no-touch') &&
            !(window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches);
+  }
+
+  function ssSpecialPreviewCancelCandidate() {
+    if (ssSpecialPreviewCandidateTimer !== null) {
+      window.clearTimeout(ssSpecialPreviewCandidateTimer);
+      ssSpecialPreviewCandidateTimer = null;
+    }
+    ssSpecialPreviewCandidate = null;
+  }
+
+  function ssSpecialPreviewResumeAutorotate() {
+    if (!ssSpecialPreviewPausedAutorotate) return;
+    ssSpecialPreviewPausedAutorotate = false;
+    // startAutorotate() already checks whether the visitor has autorotate enabled.
+    startAutorotate();
   }
 
   function ssSpecialPreviewHideActive() {
@@ -382,47 +400,22 @@
       ssSpecialPreviewActiveHotspot.classList.remove('ss-special-preview-visible');
       ssSpecialPreviewActiveHotspot = null;
     }
+    ssSpecialPreviewResumeAutorotate();
   }
 
-  function ssSpecialPreviewActivationHotspotAt(x, y) {
-    var element = document.elementFromPoint(x, y);
-    if (!element || !element.closest) return null;
+  function ssSpecialPreviewElementBelongsToHotspot(element, hotspot) {
+    if (!element || !hotspot || !element.closest) return false;
 
     var icon = element.closest('.link-hotspot-icon');
-    return icon ? icon.closest('.link-hotspot') : null;
-  }
+    if (icon && icon.closest('.link-hotspot') === hotspot) return true;
 
-  function ssSpecialPreviewStillOwnsPointer(x, y) {
-    if (!ssSpecialPreviewActiveHotspot) return false;
-
-    var element = document.elementFromPoint(x, y);
-    if (!element || !element.closest) return false;
-
-    var icon = element.closest('.link-hotspot-icon');
-    if (icon && icon.closest('.link-hotspot') === ssSpecialPreviewActiveHotspot) {
-      return true;
-    }
+    var anchor = element.closest('.ss-scene-preview-anchor');
+    if (anchor && hotspot.contains(anchor)) return true;
 
     var card = element.closest('.ss-scene-preview-card');
-    if (card && ssSpecialPreviewActiveHotspot.contains(card)) {
-      return true;
-    }
+    if (card && hotspot.contains(card)) return true;
 
     return false;
-  }
-
-  function ssSpecialPreviewSetActive(hotspot) {
-    if (ssSpecialPreviewActiveHotspot === hotspot) return;
-
-    if (ssSpecialPreviewActiveHotspot) {
-      ssSpecialPreviewActiveHotspot.classList.remove('ss-special-preview-visible');
-    }
-
-    ssSpecialPreviewActiveHotspot = hotspot || null;
-
-    if (ssSpecialPreviewActiveHotspot) {
-      ssSpecialPreviewActiveHotspot.classList.add('ss-special-preview-visible');
-    }
   }
 
   function ssSpecialPreviewWatchPointer() {
@@ -437,12 +430,12 @@
       return;
     }
 
-    // This watchdog is what closes the preview when autorotation moves the
-    // hotspot away from a stationary mouse. No mouse event is required.
-    if (!ssSpecialPreviewStillOwnsPointer(
+    var currentElement = document.elementFromPoint(
       ssSpecialPreviewPointerX,
       ssSpecialPreviewPointerY
-    )) {
+    );
+
+    if (!ssSpecialPreviewElementBelongsToHotspot(currentElement, ssSpecialPreviewActiveHotspot)) {
       ssSpecialPreviewHideActive();
       ssSpecialPreviewWatchFrame = 0;
       return;
@@ -451,10 +444,30 @@
     ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
   }
 
-  function ssSpecialPreviewHandlePhysicalMove(event) {
+  function ssSpecialPreviewShow(hotspot) {
+    if (!hotspot || ssSpecialPreviewActiveHotspot === hotspot) return;
+
+    ssSpecialPreviewHideActive();
+
+    ssSpecialPreviewActiveHotspot = hotspot;
+    ssSpecialPreviewActiveHotspot.classList.add('ss-special-preview-visible');
+
+    // Keep the target stable while the visitor moves from the arrow onto the
+    // clickable preview. This is limited to automatically-detected legacy/custom projects.
+    stopAutorotate();
+    ssSpecialPreviewPausedAutorotate = true;
+
+    if (!ssSpecialPreviewWatchFrame) {
+      ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
+    }
+  }
+
+  function ssSpecialPreviewArmFromEvent(event) {
     if (!ssSpecialPreviewIsDesktop()) return;
     if (!event || event.isTrusted === false) return;
+
     if (typeof event.buttons === 'number' && event.buttons !== 0) {
+      ssSpecialPreviewCancelCandidate();
       ssSpecialPreviewHideActive();
       return;
     }
@@ -463,44 +476,95 @@
     var y = Number(event.clientY);
     if (!Number.isFinite(x) || !Number.isFinite(y)) return;
 
-    // The first event only establishes a baseline. This prevents a page load,
-    // focus change, or synthetic target update from revealing a preview.
-    if (ssSpecialPreviewPointerX === null || ssSpecialPreviewPointerY === null) {
-      ssSpecialPreviewPointerX = x;
-      ssSpecialPreviewPointerY = y;
-      return;
-    }
-
-    var dx = x - ssSpecialPreviewPointerX;
-    var dy = y - ssSpecialPreviewPointerY;
     ssSpecialPreviewPointerX = x;
     ssSpecialPreviewPointerY = y;
 
-    // Require actual physical cursor travel. A hotspot moving under a stationary
-    // mouse has zero pointer travel and therefore cannot activate the preview.
+    if (ssSpecialPreviewLastX === null || ssSpecialPreviewLastY === null) {
+      ssSpecialPreviewLastX = x;
+      ssSpecialPreviewLastY = y;
+      return;
+    }
+
+    var dx = x - ssSpecialPreviewLastX;
+    var dy = y - ssSpecialPreviewLastY;
+    ssSpecialPreviewLastX = x;
+    ssSpecialPreviewLastY = y;
+
+    // A stationary mouse cannot pass this gate.
     if (Math.hypot(dx, dy) < 2) return;
 
-    var hotspot = ssSpecialPreviewActivationHotspotAt(x, y);
-    ssSpecialPreviewSetActive(hotspot);
+    // OPENING is based on the event's hit-test target at dispatch time.
+    // Do not use elementFromPoint() here: autorotation can move a hotspot
+    // underneath the cursor between event dispatch and our callback.
+    var eventElement = event.target && event.target.closest ? event.target : null;
+    var icon = eventElement ? eventElement.closest('.link-hotspot-icon') : null;
+    var hotspot = icon ? icon.closest('.link-hotspot') : null;
 
-    if (ssSpecialPreviewActiveHotspot && !ssSpecialPreviewWatchFrame) {
-      ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
+    if (!hotspot) {
+      ssSpecialPreviewCancelCandidate();
+
+      // Moving the mouse somewhere else closes an open preview with the normal
+      // CSS fade-out rather than allowing it to become sticky.
+      if (ssSpecialPreviewActiveHotspot) {
+        var currentElement = document.elementFromPoint(x, y);
+        if (!ssSpecialPreviewElementBelongsToHotspot(currentElement, ssSpecialPreviewActiveHotspot)) {
+          ssSpecialPreviewHideActive();
+        }
+      }
+      return;
     }
+
+    if (ssSpecialPreviewCandidate === hotspot && ssSpecialPreviewCandidateTimer !== null) {
+      return;
+    }
+
+    ssSpecialPreviewCancelCandidate();
+    ssSpecialPreviewCandidate = hotspot;
+
+    // A very short dwell filters accidental crossings and browser boundary
+    // changes while still feeling like normal desktop hover.
+    ssSpecialPreviewCandidateTimer = window.setTimeout(function() {
+      ssSpecialPreviewCandidateTimer = null;
+
+      if (ssSpecialPreviewCandidate !== hotspot) return;
+      ssSpecialPreviewCandidate = null;
+
+      var currentElement = document.elementFromPoint(
+        ssSpecialPreviewPointerX,
+        ssSpecialPreviewPointerY
+      );
+
+      var currentIcon = currentElement && currentElement.closest
+        ? currentElement.closest('.link-hotspot-icon')
+        : null;
+
+      if (!currentIcon || currentIcon.closest('.link-hotspot') !== hotspot) return;
+
+      ssSpecialPreviewShow(hotspot);
+    }, 120);
   }
 
   if (window.PointerEvent) {
-    document.addEventListener('pointermove', ssSpecialPreviewHandlePhysicalMove, { capture:true, passive:true });
+    document.addEventListener('pointermove', ssSpecialPreviewArmFromEvent, { capture:true, passive:true });
   } else {
-    document.addEventListener('mousemove', ssSpecialPreviewHandlePhysicalMove, { capture:true, passive:true });
+    document.addEventListener('mousemove', ssSpecialPreviewArmFromEvent, { capture:true, passive:true });
   }
 
-  document.addEventListener('mousedown', function() {
+  document.addEventListener('mousedown', function(event) {
+    // Do not close before a clickable preview card receives its click.
+    var target = event && event.target && event.target.closest ? event.target : null;
+    if (target && target.closest('.ss-scene-preview-card')) return;
+
+    ssSpecialPreviewCancelCandidate();
     ssSpecialPreviewHideActive();
   }, { capture:true, passive:true });
 
-  window.addEventListener('blur', ssSpecialPreviewHideActive, { passive:true });
+  window.addEventListener('blur', function() {
+    ssSpecialPreviewCancelCandidate();
+    ssSpecialPreviewHideActive();
+  }, { passive:true });
 
-  // SKY SURFER v7.4: deterministic idle UI monitor.
+  // SKY SURFER v7.5: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
   var ssNavLastActivityAt = Date.now();
   var ssNavIdleState = false;
