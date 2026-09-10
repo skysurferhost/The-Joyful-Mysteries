@@ -838,7 +838,7 @@ body.view-control-buttons .viewControlButton { display: block; }
   }
 
 
-/* SKY_SURFER_TOOLS_BUILD_V6_8 */
+/* SKY_SURFER_TOOLS_BUILD_V7_0 */
 /* ================================================================
    SKY_SURFER_PREVIEW_ENHANCER_V33
    Isolated Sky Surfer destination preview.
@@ -1088,7 +1088,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Sky Surfer v6.8 robust idle interface.
+/* Sky Surfer v7.0 robust idle interface.
    Runtime JS marks standard and recognized legacy/custom controls with
    .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
 .ss-idle-ui {
@@ -1131,98 +1131,6 @@ body.ss-nav-hotspots-idle .info-hotspot-modal {
   opacity: 1 !important;
 }
 
-
-/* SKY SURFER CONTENT EDITING v1 — multilingual-friendly sizing */
-#titleBar .sceneName {
-  font-size: clamp(14px, 2.2vw, 22px) !important;
-  unicode-bidi: plaintext;
-}
-
-/* Joyful Mystery-style information hotspot sizing, parameterized. */
-.info-hotspot .info-hotspot-header {
-  width:40px !important;
-  height:52px !important;
-  border-radius:26px !important;
-}
-.mobile .info-hotspot .info-hotspot-header {
-  width:50px !important;
-  height:60px !important;
-  border-radius:30px !important;
-}
-.desktop.no-touch .info-hotspot .info-hotspot-header:hover,
-.desktop .info-hotspot.visible .info-hotspot-header,
-.desktop.no-touch .info-hotspot.visible .info-hotspot-header:hover {
-  width:420px !important;
-  border-radius:5px !important;
-  border-top-right-radius:0 !important;
-  border-bottom-right-radius:0 !important;
-  border-bottom-left-radius:0 !important;
-}
-.info-hotspot .info-hotspot-icon-wrapper {
-  width:40px !important;
-  height:52px !important;
-}
-.mobile .info-hotspot .info-hotspot-icon-wrapper {
-  width:50px !important;
-  height:60px !important;
-}
-.info-hotspot .info-hotspot-title-wrapper {
-  left:40px !important;
-  height:53px !important;
-}
-.desktop .info-hotspot.visible .info-hotspot-title-wrapper,
-.desktop.no-touch .info-hotspot .info-hotspot-header:hover .info-hotspot-title-wrapper {
-  width:380px !important;
-  padding:0 5px !important;
-}
-.info-hotspot .info-hotspot-title,
-.info-hotspot-modal .info-hotspot-title {
-  font-size:21px !important;
-  line-height:1.2 !important;
-  unicode-bidi:plaintext;
-}
-.info-hotspot .info-hotspot-close-wrapper {
-  left:420px !important;
-  width:40px !important;
-  height:53px !important;
-}
-.info-hotspot .info-hotspot-text {
-  width:460px !important;
-  max-height:300px !important;
-  top:52px !important;
-  font-size:21px !important;
-  line-height:1.5 !important;
-  unicode-bidi:plaintext;
-}
-.info-hotspot .info-hotspot-text p,
-.info-hotspot-modal .info-hotspot-text p {
-  margin-top:0 !important;
-  margin-bottom:1em !important;
-}
-.info-hotspot-modal .info-hotspot-title,
-.info-hotspot-modal .info-hotspot-text {
-  unicode-bidi:plaintext;
-}
-.info-hotspot-modal .info-hotspot-text {
-  font-size:21px !important;
-  line-height:1.5 !important;
-}
-/* Phone modal remains responsive and scrollable regardless of language length. */
-.mobile .info-hotspot-modal .info-hotspot-header {
-  left:10px !important;
-  right:10px !important;
-  width:auto !important;
-  height:50px !important;
-}
-.mobile .info-hotspot-modal .info-hotspot-text {
-  top:110px !important;
-  right:10px !important;
-  bottom:10px !important;
-  left:10px !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch;
-  overflow-wrap:anywhere;
-}
 
 /* Clean transparent autorotate control. Keep Marzipano's original white video-style play/pause artwork. */
 #autorotateToggle { background:transparent !important; background-color:transparent !important; border:0 !important; box-shadow:none !important; top:0 !important; right:40px !important; width:40px !important; height:40px !important; padding:0 !important; box-sizing:border-box !important; }
