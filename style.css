@@ -838,7 +838,7 @@ body.view-control-buttons .viewControlButton { display: block; }
   }
 
 
-/* SKY_SURFER_TOOLS_BUILD_V7_1 */
+/* SKY_SURFER_TOOLS_BUILD_V7_2 */
 /* ================================================================
    SKY_SURFER_PREVIEW_ENHANCER_V33
    Isolated Sky Surfer destination preview.
@@ -1088,7 +1088,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Sky Surfer v7.1 robust idle interface.
+/* Sky Surfer v7.2 robust idle interface.
    Runtime JS marks standard and recognized legacy/custom controls with
    .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
 .ss-idle-ui {

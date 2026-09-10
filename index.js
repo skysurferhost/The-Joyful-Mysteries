@@ -350,8 +350,9 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V7_1
+  // SKY_SURFER_TOOLS_BUILD_V7_2
   // SKY_SURFER_PREVIEW_ENHANCER_V33
+  // SKY_SURFER_SPECIAL_PREVIEW_MODE=ON
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
   document.addEventListener('click', function() {
     var openPreviews = document.querySelectorAll('.link-hotspot.preview-visible');
@@ -360,8 +361,10 @@
     }
   });
 
-  // SKY SURFER v7.1 special legacy/custom desktop preview compatibility.
+  // SKY SURFER v7.2 special legacy/custom desktop preview compatibility.
   // IMPORTANT: only a genuine physical desktop mouse movement can open a preview.
+  // Mark the document so CSS can explicitly disable ordinary :hover behavior.
+  document.body.classList.add('ss-special-preview-mode');
   // Hotspot mouseenter/mouseover/:hover are deliberately NOT used in this mode,
   // because an autorotating panorama can move a hotspot underneath a stationary cursor.
   var ssSpecialPreviewPointerX = null;
@@ -429,7 +432,7 @@
     ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
   }
 
-  document.addEventListener('mousemove', function(event) {
+  function ssSpecialPreviewHandlePhysicalMove(event) {
     if (!ssSpecialPreviewIsDesktop()) return;
     if (!event || event.isTrusted === false) return;
     if (typeof event.buttons === 'number' && event.buttons !== 0) {
@@ -464,7 +467,13 @@
     if (ssSpecialPreviewActiveHotspot && !ssSpecialPreviewWatchFrame) {
       ssSpecialPreviewWatchFrame = window.requestAnimationFrame(ssSpecialPreviewWatchPointer);
     }
-  }, { capture:true, passive:true });
+  }
+
+  if (window.PointerEvent) {
+    document.addEventListener('pointermove', ssSpecialPreviewHandlePhysicalMove, { capture:true, passive:true });
+  } else {
+    document.addEventListener('mousemove', ssSpecialPreviewHandlePhysicalMove, { capture:true, passive:true });
+  }
 
   document.addEventListener('mousedown', function() {
     ssSpecialPreviewHideActive();
@@ -472,7 +481,7 @@
 
   window.addEventListener('blur', ssSpecialPreviewHideActive, { passive:true });
 
-  // SKY SURFER v7.1: deterministic idle UI monitor.
+  // SKY SURFER v7.2: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
   var ssNavLastActivityAt = Date.now();
   var ssNavIdleState = false;
