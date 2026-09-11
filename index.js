@@ -1,6 +1,5 @@
 /*
  * Copyright 2016 Google Inc. All rights reserved.
- * Modifications Copyright 2026 Sky Surfer.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,107 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 'use strict';
-
-(function () {
-  // 1) Disable right-click menu
-  document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-  }, { capture: true });
-
-  // 2) Prevent dragging (images/links)
-  document.addEventListener('dragstart', function (e) {
-    const t = e.target;
-    if (!t) return;
-    const tag = (t.tagName || '').toLowerCase();
-    if (tag === 'img' || tag === 'a') e.preventDefault();
-  }, { capture: true });
-
-  // 3) Block common shortcuts
-  document.addEventListener('keydown', function (e) {
-    const key = (e.key || '').toLowerCase();
-    const ctrlOrCmd = e.ctrlKey || e.metaKey;
-
-    // Save / Print / View source / DevTools-ish keys
-    if (ctrlOrCmd && (key === 's' || key === 'p' || key === 'u')) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-
-    // F12 (DevTools)
-    if (e.key === 'F12') {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-
-    // Ctrl+Shift+I / Cmd+Opt+I (DevTools), Ctrl+Shift+J (Console)
-    if (ctrlOrCmd && e.shiftKey && (key === 'i' || key === 'j')) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-  }, { capture: true });
-
-  // 4) Block copy/cut (optional — can be annoying)
-  document.addEventListener('copy', function (e) { e.preventDefault(); }, { capture: true });
-  document.addEventListener('cut', function (e) { e.preventDefault(); }, { capture: true });
-
-  // 5) Block text selection start (you already do user-select:none globally in CSS)
-  document.addEventListener('selectstart', function (e) { e.preventDefault(); }, { capture: true });
-})();
-
-
-(function () {
-  // 1) Disable right-click menu
-  document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-  }, { capture: true });
-
-  // 2) Prevent dragging (images/links)
-  document.addEventListener('dragstart', function (e) {
-    const t = e.target;
-    if (!t) return;
-    const tag = (t.tagName || '').toLowerCase();
-    if (tag === 'img' || tag === 'a') e.preventDefault();
-  }, { capture: true });
-
-  // 3) Block common shortcuts
-  document.addEventListener('keydown', function (e) {
-    const key = (e.key || '').toLowerCase();
-    const ctrlOrCmd = e.ctrlKey || e.metaKey;
-
-    // Save / Print / View source / DevTools-ish keys
-    if (ctrlOrCmd && (key === 's' || key === 'p' || key === 'u')) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-
-    // F12 (DevTools)
-    if (e.key === 'F12') {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-
-    // Ctrl+Shift+I / Cmd+Opt+I (DevTools), Ctrl+Shift+J (Console)
-    if (ctrlOrCmd && e.shiftKey && (key === 'i' || key === 'j')) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-  }, { capture: true });
-
-  // 4) Block copy/cut (optional — can be annoying)
-  document.addEventListener('copy', function (e) { e.preventDefault(); }, { capture: true });
-  document.addEventListener('cut', function (e) { e.preventDefault(); }, { capture: true });
-
-  // 5) Block text selection start (you already do user-select:none globally in CSS)
-  document.addEventListener('selectstart', function (e) { e.preventDefault(); }, { capture: true });
-})();
-
 
 (function() {
   var Marzipano = window.Marzipano;
@@ -350,10 +250,10 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V7_8
+  // SKY_SURFER_TOOLS_BUILD_V7_9
   // SKY_SURFER_PREVIEW_ENHANCER_V33
-  // SKY_SURFER_PROJECT_COMPATIBILITY=AUTO_SPECIAL_NORMALIZED_STANDARD_RUNTIME
-  // SKY_SURFER_SPECIAL_PREVIEW_MODE=NORMALIZED_TO_STANDARD_RUNTIME
+  // SKY_SURFER_PROJECT_COMPATIBILITY=ST_MATTHEW_HARD_RESET
+  // SKY_SURFER_SPECIAL_PREVIEW_MODE=OFF
   // Touch behavior: tap away from a link hotspot to close any open destination preview.
   document.addEventListener('click', function() {
     var openPreviews = document.querySelectorAll('.link-hotspot.preview-visible');
@@ -361,13 +261,6 @@
       openPreviews[i].classList.remove('preview-visible');
     }
   });
-
-  // SKY SURFER v7.8 normalized legacy/custom preview compatibility.
-  // The source project's old link-hotspot function and tooltip CSS were already
-  // replaced/removed before this point. Keep only a marker class; the actual
-  // desktop preview runtime now uses hotspot-local events instead of the old
-  // document-wide pointer gate.
-  document.body.classList.add('ss-normalized-preview-mode');
 
   // SKY SURFER v7.6: deterministic idle UI monitor.
   var ssNavIdleDelay = 3000;
@@ -569,7 +462,6 @@
     });
 
     var ssStandardPreviewHideTimer = null;
-    var ssNormalizedPreviewArmTimer = null;
 
     function ssDesktopFinePointerAvailable() {
       if (!window.matchMedia) return !document.body.classList.contains('mobile');
@@ -584,10 +476,6 @@
         window.clearTimeout(ssStandardPreviewHideTimer);
         ssStandardPreviewHideTimer = null;
       }
-      if (ssNormalizedPreviewArmTimer !== null) {
-        window.clearTimeout(ssNormalizedPreviewArmTimer);
-        ssNormalizedPreviewArmTimer = null;
-      }
 
       var openStandardPreviews = document.querySelectorAll('.link-hotspot.ss-standard-preview-visible');
       for (var s = 0; s < openStandardPreviews.length; s++) {
@@ -599,10 +487,6 @@
     }
 
     function ssStandardPreviewScheduleHide() {
-      if (ssNormalizedPreviewArmTimer !== null) {
-        window.clearTimeout(ssNormalizedPreviewArmTimer);
-        ssNormalizedPreviewArmTimer = null;
-      }
       if (ssStandardPreviewHideTimer !== null) {
         window.clearTimeout(ssStandardPreviewHideTimer);
       }
@@ -615,36 +499,7 @@
       }, 420);
     }
 
-    if (document.body.classList.contains('ss-normalized-preview-mode')) {
-      // Joyful/custom projects are normalized first. A real pointermove on this
-      // hotspot arms the preview, so autorotation alone cannot open it. This
-      // avoids the old global event.target/elementFromPoint/requestAnimationFrame
-      // chain that could miss the icon entirely in customized projects.
-      var ssNormalizedPreviewMoveHandler = function(event) {
-        if (!ssDesktopFinePointerAvailable()) return;
-        if (event && event.isTrusted === false) return;
-        if (typeof event.buttons === 'number' && event.buttons !== 0) return;
-
-        if (ssStandardPreviewHideTimer !== null) {
-          window.clearTimeout(ssStandardPreviewHideTimer);
-          ssStandardPreviewHideTimer = null;
-        }
-        if (ssNormalizedPreviewArmTimer !== null) return;
-
-        ssNormalizedPreviewArmTimer = window.setTimeout(function() {
-          ssNormalizedPreviewArmTimer = null;
-          if (wrapper.matches(':hover')) ssStandardPreviewShow();
-        }, 70);
-      };
-
-      if (window.PointerEvent) {
-        wrapper.addEventListener('pointermove', ssNormalizedPreviewMoveHandler, { passive:true });
-      } else {
-        wrapper.addEventListener('mousemove', ssNormalizedPreviewMoveHandler, { passive:true });
-      }
-    } else {
-      wrapper.addEventListener('mouseenter', ssStandardPreviewShow);
-    }
+    wrapper.addEventListener('mouseenter', ssStandardPreviewShow);
 
     wrapper.addEventListener('mouseleave', ssStandardPreviewScheduleHide);
 
