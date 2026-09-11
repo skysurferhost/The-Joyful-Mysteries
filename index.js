@@ -250,7 +250,7 @@
     }
   }
 
-  // SKY_SURFER_TOOLS_BUILD_V7_9
+  // SKY_SURFER_TOOLS_BUILD_V8_0
   // SKY_SURFER_PREVIEW_ENHANCER_V33
   // SKY_SURFER_PROJECT_COMPATIBILITY=ST_MATTHEW_HARD_RESET
   // SKY_SURFER_SPECIAL_PREVIEW_MODE=OFF
@@ -274,7 +274,7 @@
     if (!document.body) return;
     ssNavIdleState = !!isIdle;
     document.body.classList.toggle('ss-nav-hotspots-idle', ssNavIdleState);
-    // Desktop previews are native CSS :hover, so no persistent preview class needs cleanup.
+    // Desktop previews are class-driven by verified physical mouse movement; the class is cleared below when needed.
   }
 
   function ssNavRecordActivity() {
@@ -462,16 +462,10 @@
     });
 
     var ssStandardPreviewHideTimer = null;
-
-    function ssDesktopFinePointerAvailable() {
-      if (!window.matchMedia) return !document.body.classList.contains('mobile');
-      // any-* sees an attached mouse even on hybrid Windows devices where the
-      // primary pointer may be reported as coarse/touch.
-      return window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches;
-    }
+    var ssStandardPreviewLastPointerX = null;
+    var ssStandardPreviewLastPointerY = null;
 
     function ssStandardPreviewShow() {
-      if (!ssDesktopFinePointerAvailable()) return;
       if (ssStandardPreviewHideTimer !== null) {
         window.clearTimeout(ssStandardPreviewHideTimer);
         ssStandardPreviewHideTimer = null;
@@ -483,7 +477,29 @@
           openStandardPreviews[s].classList.remove('ss-standard-preview-visible');
         }
       }
+
       wrapper.classList.add('ss-standard-preview-visible');
+    }
+
+    function ssStandardPreviewRememberPointer(event) {
+      ssStandardPreviewLastPointerX = event.clientX;
+      ssStandardPreviewLastPointerY = event.clientY;
+    }
+
+    function ssStandardPreviewHandlePhysicalMove(event) {
+      if (ssStandardPreviewLastPointerX === null || ssStandardPreviewLastPointerY === null) {
+        ssStandardPreviewRememberPointer(event);
+        return;
+      }
+
+      var deltaX = Math.abs(event.clientX - ssStandardPreviewLastPointerX);
+      var deltaY = Math.abs(event.clientY - ssStandardPreviewLastPointerY);
+      ssStandardPreviewRememberPointer(event);
+
+      // Require a real coordinate change. Autorotation moving the hotspot
+      // underneath a stationary cursor cannot satisfy this condition.
+      if (deltaX < 1 && deltaY < 1) return;
+      ssStandardPreviewShow();
     }
 
     function ssStandardPreviewScheduleHide() {
@@ -491,17 +507,20 @@
         window.clearTimeout(ssStandardPreviewHideTimer);
       }
 
-      // Short grace period so the cursor can cross the visual gap to the card.
       ssStandardPreviewHideTimer = window.setTimeout(function() {
         ssStandardPreviewHideTimer = null;
         if (wrapper.matches(':hover')) return;
         wrapper.classList.remove('ss-standard-preview-visible');
-      }, 420);
+      }, 500);
     }
 
-    wrapper.addEventListener('mouseenter', ssStandardPreviewShow);
-
-    wrapper.addEventListener('mouseleave', ssStandardPreviewScheduleHide);
+    wrapper.addEventListener('mouseenter', ssStandardPreviewRememberPointer);
+    wrapper.addEventListener('mousemove', ssStandardPreviewHandlePhysicalMove);
+    wrapper.addEventListener('mouseleave', function() {
+      ssStandardPreviewLastPointerX = null;
+      ssStandardPreviewLastPointerY = null;
+      ssStandardPreviewScheduleHide();
+    });
 
 
     stopTouchAndScrollEventPropagation(wrapper);
@@ -519,15 +538,19 @@
     var previewCard = document.createElement('div');
     previewCard.classList.add('ss-scene-preview-card');
 
+    var previewMedia = document.createElement('div');
+    previewMedia.classList.add('ss-scene-preview-media');
+
     var previewImage = document.createElement('img');
     previewImage.classList.add('ss-scene-preview-image');
     previewImage.src = 'thumbnails/' + hotspot.target + '.jpg';
     previewImage.alt = targetScene.name;
+    previewMedia.appendChild(previewImage);
     var previewTitle = document.createElement('div');
     previewTitle.classList.add('ss-scene-preview-title');
     previewTitle.textContent = targetScene.name;
 
-    previewCard.appendChild(previewImage);
+    previewCard.appendChild(previewMedia);
     previewCard.appendChild(previewTitle);
     previewCard.addEventListener('mouseenter', function() {
       if (wrapper.classList.contains('ss-standard-preview-visible')) {

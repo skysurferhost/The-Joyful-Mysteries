@@ -829,7 +829,7 @@ body.view-control-buttons .viewControlButton { display: block; }
   }
 
 
-/* SKY_SURFER_TOOLS_BUILD_V7_9 */
+/* SKY_SURFER_TOOLS_BUILD_V8_0 */
 /* ================================================================
    SKY_SURFER_PREVIEW_ENHANCER_V33
    Isolated Sky Surfer destination preview.
@@ -913,21 +913,40 @@ body.view-control-buttons .viewControlButton { display: block; }
     transform .42s ease !important;
 }
 
-.ss-scene-preview-image {
+.ss-scene-preview-media {
   display: block !important;
+  position: relative !important;
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
+  aspect-ratio: 16 / 9 !important;
   height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
-  object-fit: contain !important;
-  object-position: center !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
   border-radius: 8px !important;
+  overflow: hidden !important;
+  background: #111 !important;
+  box-sizing: border-box !important;
+}
+
+.ss-scene-preview-image {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: auto !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   box-sizing: border-box !important;
 }
 
@@ -1013,11 +1032,9 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Desktop destination preview visibility.
-   any-* keeps mouse hover working on hybrid Windows devices. */
-@media (any-hover: hover) and (any-pointer: fine) {
-  .link-hotspot.ss-standard-preview-visible .ss-scene-preview-card,
-  .link-hotspot:hover .ss-scene-preview-card {
+/* Corrected v8.0 desktop behavior: physical mouse movement only. */
+@media (hover: hover) and (pointer: fine) {
+  .link-hotspot.ss-standard-preview-visible .ss-scene-preview-card {
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
@@ -1118,7 +1135,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Sky Surfer v7.9 robust idle interface.
+/* Sky Surfer v8.0 robust idle interface.
    Runtime JS marks standard and recognized legacy/custom controls with
    .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
 .ss-idle-ui {
