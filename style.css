@@ -113,7 +113,7 @@ body.multiple-scenes.mobile #titleBar {
   line-clamp: 2;
 }
 
-/* SKY SURFER v8.0: removed malformed legacy top-level user-select fragment. */
+/* SKY SURFER v8.2: removed malformed legacy top-level user-select fragment. */
 /* Mobile fine-tuning */
 .mobile #titleBar .sceneName {
   padding: 8px 10px;
@@ -824,11 +824,11 @@ body.view-control-buttons .viewControlButton { display: block; }
   }
 
 
-/* SKY SURFER v8.0: repaired 1 unterminated legacy CSS block. */
+/* SKY SURFER v8.2: repaired 1 unterminated legacy CSS block. */
 }
 
 
-/* SKY_SURFER_TOOLS_BUILD_V8_0 */
+/* SKY_SURFER_TOOLS_BUILD_V8_4 */
 /* ================================================================
    SKY_SURFER_PREVIEW_ENHANCER_V33
    Isolated Sky Surfer destination preview.
@@ -1031,7 +1031,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Corrected v8.0 desktop behavior: physical mouse movement only. */
+/* Corrected v8.2 desktop behavior: physical mouse movement only. */
 @media (hover: hover) and (pointer: fine) {
   .link-hotspot.ss-standard-preview-visible .ss-scene-preview-card {
     opacity: 1 !important;
@@ -1053,6 +1053,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 /* Navigation arrow style: Classic Marzipano */
+/* Information icon style: Original Marzipano */
 /* Fullscreen button style: Classic Marzipano */
 
 /* Keep Marzipano's normal title-bar look, but let its own bar background
@@ -1134,7 +1135,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 }
 
 
-/* Sky Surfer v8.0 robust idle interface.
+/* Sky Surfer v8.2 robust idle interface.
    Runtime JS marks standard and recognized legacy/custom controls with
    .ss-idle-ui. Only opacity is animated; hotspot transforms remain untouched. */
 .ss-idle-ui {
