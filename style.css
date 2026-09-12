@@ -829,6 +829,10 @@ body.view-control-buttons .viewControlButton { display: block; }
   }
 
 
+/* SKY SURFER v8.0: repaired 1 unterminated legacy CSS block. */
+}
+
+
 /* SKY_SURFER_TOOLS_BUILD_V8_0 */
 /* ================================================================
    SKY_SURFER_PREVIEW_ENHANCER_V33
