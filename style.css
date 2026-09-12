@@ -113,12 +113,7 @@ body.multiple-scenes.mobile #titleBar {
   line-clamp: 2;
 }
 
-  -moz-user-select: text;
-  -webkit-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
-}
-
+/* SKY SURFER v8.0: removed malformed legacy top-level user-select fragment. */
 /* Mobile fine-tuning */
 .mobile #titleBar .sceneName {
   padding: 8px 10px;
