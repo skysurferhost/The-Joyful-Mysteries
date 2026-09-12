@@ -1146,6 +1146,7 @@ body.view-control-buttons .viewControlButton { display: block; }
 body.ss-nav-hotspots-idle .ss-idle-ui,
 body.ss-nav-hotspots-idle .link-hotspot,
 body.ss-nav-hotspots-idle #titleBar,
+body.ss-nav-hotspots-idle #sceneList,
 body.ss-nav-hotspots-idle #sceneListToggle,
 body.ss-nav-hotspots-idle #autorotateToggle,
 body.ss-nav-hotspots-idle #fullscreenToggle,
@@ -1169,10 +1170,8 @@ body.ss-nav-hotspots-idle * {
   cursor: none !important;
 }
 
-/* Deliberately-open reading/navigation surfaces remain visible. */
-body.ss-nav-hotspots-idle #sceneList,
-body.ss-nav-hotspots-idle #sceneList .scenes,
-body.ss-nav-hotspots-idle #sceneList .scene,
+/* An opened information panel remains readable while ordinary navigation UI,
+   including an opened scene list, fades away. */
 body.ss-nav-hotspots-idle .info-hotspot,
 body.ss-nav-hotspots-idle .info-hotspot-modal {
   opacity: 1 !important;

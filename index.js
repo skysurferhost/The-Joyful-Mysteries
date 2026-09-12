@@ -340,10 +340,9 @@
 
   function ssNavMarkIdleElement(element) {
     if (!element || !element.classList) return;
-    if (element.id === 'sceneList' ||
-        element.classList.contains('scenes') ||
-        element.classList.contains('scene') ||
-        element.classList.contains('info-hotspot') ||
+    // Keep an opened information panel readable, but allow an opened scene list
+    // to fade with the rest of the tour controls during the idle presentation state.
+    if (element.classList.contains('info-hotspot') ||
         element.classList.contains('info-hotspot-modal')) return;
     element.classList.add('ss-idle-ui');
   }
@@ -353,6 +352,7 @@
     var selectors = [
       '.link-hotspot',
       '#titleBar',
+      '#sceneList',
       '#sceneListToggle',
       '#autorotateToggle',
       '#fullscreenToggle',
